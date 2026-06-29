@@ -268,6 +268,52 @@
       font-weight: 300;
     }
 
+    /* ── Download ── */
+    .download-section { background: var(--ink-black); color:#fff; }
+    .download-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem; margin-top: 2rem;
+    }
+    .download-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 2rem;
+      transition: all 0.4s; position:relative;
+      overflow:hidden; text-decoration:none; color:inherit;
+      display:block;
+    }
+    .download-card:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--cinnabar);
+      transform: translateY(-2px);
+    }
+    .download-card .platform {
+      font-size:0.75rem; opacity:0.5; letter-spacing:0.1em;
+      margin-bottom: 0.75rem;
+    }
+    .download-card h3 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.35rem; margin-bottom:0.5rem;
+    }
+    .download-card .desc {
+      font-size:0.85rem; opacity:0.6; margin-bottom:1.5rem;
+      line-height:1.6;
+    }
+    .download-card .tag {
+      display:inline-block; padding:0.15rem 0.6rem;
+      border-radius:4px; font-size:0.7rem;
+      background: var(--cinnabar); color:#fff;
+    }
+    .download-releases {
+      margin-top:1.5rem; font-size:0.85rem; opacity:0.5;
+      text-align:center;
+    }
+    .download-releases a { color:var(--cinnabar); }
+    .download-card .filesize {
+      font-size:0.8rem; opacity:0.35; margin-top:0.25rem;
+    }
+
     /* ── Quick Start ── */
     .code-block {
       background: var(--ink-black); border-radius: 16px;
@@ -358,10 +404,10 @@
       <span class="dot"></span> Yanxi
     </a>
     <ul class="nav-links">
+      <li><a href="#download">下载</a></li>
       <li><a href="#features">特性</a></li>
       <li><a href="#how-it-works">工作原理</a></li>
-      <li><a href="#tech-stack">技术栈</a></li>
-      <li><a href="#quickstart">快速开始</a></li>
+      <li><a href="#quickstart">源码构建</a></li>
     </ul>
     <a href="https://github.com/666-gy/Yanxi-Code" class="nav-cta" target="_blank">GitHub</a>
   </div>
@@ -387,6 +433,34 @@
       GitHub
     </a>
     <a href="#features" class="btn btn-outline">了解更多</a>
+  </div>
+</section>
+
+<!-- Download -->
+<section id="download" class="download-section">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label" style="color:rgba(255,255,255,0.5);">下载</div>
+    <h2 class="section-title" style="color:#fff;">选择适合你的版本</h2>
+    <p class="section-desc" style="color:rgba(255,255,255,0.5);">Windows 64 位，v1.0.0 · 开源免费，MIT 协议</p>
+    <div class="download-grid">
+      <a href="https://github.com/666-gy/Yanxi-Code/releases" target="_blank" class="download-card">
+        <div class="platform">推荐</div>
+        <h3>安装版<span class="tag" style="margin-left:10px;">Setup</span></h3>
+        <p class="desc">标准安装程序，支持自定义路径、桌面快捷方式和开始菜单。一步到位，即刻使用。</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Setup 1.0.0.exe</div>
+        <div class="filesize">≈ 112 MB</div>
+      </a>
+      <a href="https://github.com/666-gy/Yanxi-Code/releases" target="_blank" class="download-card">
+        <div class="platform">免安装</div>
+        <h3>便携版<span class="tag" style="margin-left:10px;">Portable</span></h3>
+        <p class="desc">解压即用，无需安装。适合放在 U 盘随身携带，不写注册表，干净轻量。</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi-Portable-1.0.0.exe</div>
+        <div class="filesize">≈ 112 MB</div>
+      </a>
+    </div>
+    <div class="download-releases">
+      所有版本可在 <a href="https://github.com/666-gy/Yanxi-Code/releases" target="_blank">GitHub Releases</a> 查看
+    </div>
   </div>
 </section>
 
@@ -507,25 +581,21 @@
   </div>
 </section>
 
-<!-- Quick Start -->
+<!-- 源码构建 -->
 <section id="quickstart" style="background: var(--card-bg); border-top:1px solid var(--border);">
   <div class="section-inner">
-    <div class="section-label">快速开始</div>
-    <h2 class="section-title">两行命令，即刻启程</h2>
-    <p class="section-desc">Node.js 18+ 即可，无需复杂配置</p>
+    <div class="section-label">源码构建</div>
+    <h2 class="section-title">开发者从这里开始</h2>
+    <p class="section-desc">参与贡献或自己动手构建，Node.js 18+ 即可</p>
     <div class="code-block">
       <button class="code-copy" onclick="copyCode()">复制</button>
       <pre><span class="comment"># 1. 克隆仓库</span>
 <span class="cmd">git clone</span> <span class="path">https://github.com/666-gy/Yanxi-Code.git</span>
-<span class="cmd">cd</span> Yanxi-Code
 
-<span class="comment"># 2. 安装依赖</span>
-<span class="cmd">npm install</span>
+<span class="comment"># 2. 安装依赖并启动</span>
+<span class="cmd">npm install && npm run dev</span>
 
-<span class="comment"># 3. 启动开发</span>
-<span class="cmd">npm run dev</span>
-
-<span class="comment"># 4. 打包为桌面应用</span>
+<span class="comment"># 3. 打包桌面应用</span>
 <span class="cmd">npm run electron:build</span></pre>
     </div>
 
@@ -569,9 +639,7 @@
   // Copy code
   function copyCode() {
     const code = `git clone https://github.com/666-gy/Yanxi-Code.git
-cd Yanxi-Code
-npm install
-npm run dev
+npm install && npm run dev
 npm run electron:build`;
     navigator.clipboard.writeText(code).then(() => {
       const btn = document.querySelector('.code-copy');
