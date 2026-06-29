@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+Pro:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========== 主题变量 ========== */
+
+/* 暗色主题（默认） */
+:root,
+:root.dark {
+  /* Cyber 颜色阶梯 */
+  --cyber-950: #0a0f1a;
+  --cyber-900: #0f172a;
+  --cyber-800: #1e293b;
+  --cyber-700: #334155;
+  --cyber-600: #475569;
+
+  /* 文本颜色 */
+  --text-primary: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+
+  /* 强调色 */
+  --accent: #f59e0b;
+  --accent-hover: #fbbf24;
+  --accent-muted: rgba(245, 158, 11, 0.2);
+
+  /* 状态色 */
+  --status-success: #2dd4bf;
+  --status-error: #ef4444;
+
+  /* 滚动条 */
+  --scrollbar-track: #0f172a;
+  --scrollbar-thumb: #334155;
+
+  /* Monaco 编辑器 */
+  --monaco-bg: #0f172a;
+}
+
+/* 浅色主题 */
+:root.light {
+  --cyber-950: #ffffff;
+  --cyber-900: #f8fafc;
+  --cyber-800: #f1f5f9;
+  --cyber-700: #e2e8f0;
+  --cyber-600: #cbd5e1;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  --accent: #d97706;
+  --accent-hover: #f59e0b;
+  --accent-muted: rgba(217, 119, 6, 0.15);
+
+  --status-success: #14b8a6;
+  --status-error: #ef4444;
+
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+
+  --monaco-bg: #ffffff;
+}
+
+/* ========== 基础样式 ========== */
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--cyber-950);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ========== 滚动条 ========== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyber-600);
+}
+
+/* ========== 翻译面板 Markdown 样式 ========== */
+.translate-markdown {
+  font-family: "Source Serif Pro", Georgia, serif;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.translate-markdown h1,
+.translate-markdown h2,
+.translate-markdown h3 {
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.translate-markdown h1 { font-size: 1.25rem; }
+.translate-markdown h2 { font-size: 1.1rem; }
+.translate-markdown h3 { font-size: 1rem; }
+
+.translate-markdown p {
+  margin-bottom: 0.75em;
+}
+
+.translate-markdown ul,
+.translate-markdown ol {
+  margin-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+.translate-markdown li {
+  margin-bottom: 0.25em;
+  color: var(--text-secondary);
+}
+
+.translate-markdown code {
+  background: var(--cyber-900);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: Consolas, "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  color: var(--status-success);
+}
+
+.translate-markdown pre {
+  background: var(--cyber-900);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.75em 0;
+  border: 1px solid var(--cyber-800);
+}
+
+.translate-markdown pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.translate-markdown blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.translate-markdown strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ========== 动画 ========== */
+.typing-cursor::after {
+  content: '▊';
+  color: var(--accent);
+  animation: typingCursor 1s step-end infinite;
+  margin-left: 2px;
+}
+
+@keyframes typingCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.loading-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin: 0 2px;
+  animation: bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.breathing-light {
+  animation: breathing 2s ease-in-out infinite;
+}
+
+@keyframes breathing {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 4px currentColor; }
+  50% { opacity: 1; box-shadow: 0 0 12px currentColor; }
+}
+
+.stagger-reveal > * {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.stagger-reveal > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-reveal > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-reveal > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-reveal > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-reveal > *:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 流动画 - 药丸按钮 */
+@keyframes flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-flow {
+  background-size: 200% 200%;
+  animation: flow 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Monaco 编辑器覆盖 */
+.monaco-editor .margin {
+  background-color: var(--monaco-bg) !important;
+}
+
+.monaco-editor .glyph-margin {
+  background-color: var(--monaco-bg) !important;
+}
+
+/* 行内翻译动画 */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* 加载动画 - 三点跳动 */
+@keyframes dots {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+.loading-dots::after {
+  content: '.';
+  animation: dots 1s steps(5, end) infinite;
+}
+
+.loading-dots::before {
+  content: '翻译中';
+}

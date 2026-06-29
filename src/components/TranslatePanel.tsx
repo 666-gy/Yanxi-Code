@@ -1,0 +1,215 @@
+import { X, RefreshCw, BookOpen, Lightbulb, Target, Zap, ToggleLeft, ToggleRight } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useStore } from '../store/useStore';
+import { useDeepSeek } from '../hooks/useDeepSeek';
+import { extractCodeBlock, detectLanguage } from '../utils/codeExtractor';
+
+export function TranslatePanel() {
+  const {
+    translation,
+    isTranslating,
+    translatePanelOpen,
+    toggleTranslatePanel,
+    activeFilePath,
+    fileContents,
+    cursorPosition,
+    aiStatus,
+    translateEnabled,
+    setTranslateEnabled,
+    openTabs,
+  } = useStore();
+  
+  const { translate } = useDeepSeek();
+
+  const handleManualTranslate = () => {
+    if (!activeFilePath) return;
+    const content = fileContents[activeFilePath] || '';
+    const activeTab = openTabs.find(t => t.path === activeFilePath);
+    const language = activeTab?.language || detectLanguage(activeFilePath);
+    const block = extractCodeBlock(content, cursorPosition.line, language);
+    if (block.content.trim()) {
+      translate(block.content, language, 'deep');
+    }
+  };
+
+  if (!translatePanelOpen) {
+    return (
+      <div className="w-10 bg-cyber-800 border-l border-cyber-700 flex flex-col items-center py-4 shrink-0">
+        <button
+          onClick={toggleTranslatePanel}
+          className="p-2 rounded-lg hover:bg-cyber-700 transition-colors text-amber-400"
+          title="展开翻译面板"
+        >
+          <BookOpen size={20} />
+        </button>
+        <button
+          onClick={() => setTranslateEnabled(!translateEnabled)}
+          className="p-2 mt-2 rounded-lg hover:bg-cyber-700 transition-colors"
+          title={translateEnabled ? '关闭自动翻译' : '开启自动翻译'}
+        >
+          {translateEnabled ? (
+            <ToggleRight size={20} className="text-amber-400" />
+          ) : (
+            <ToggleLeft size={20} className="text-scholar-subtle" />
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <aside className="w-96 min-w-[300px] bg-cyber-800 border-l border-cyber-700 flex flex-col">
+      <div className="h-12 border-b border-cyber-700 flex items-center justify-between px-4 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+            <BookOpen size={15} className="text-cyber-950" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-scholar-text">AI 译</h2>
+            <p className="text-[10px] text-scholar-subtle">边写边译 · 实时解释</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          {/* 翻译开关 */}
+          <button
+            onClick={() => setTranslateEnabled(!translateEnabled)}
+            className={`p-1.5 rounded-md transition-colors ${
+              translateEnabled 
+                ? 'bg-amber-500/20 text-amber-400' 
+                : 'text-scholar-subtle hover:bg-cyber-700'
+            }`}
+            title={translateEnabled ? '点击关闭实时翻译' : '点击开启实时翻译'}
+          >
+            {translateEnabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+          </button>
+          <button
+            onClick={handleManualTranslate}
+            className="p-1.5 rounded-md hover:bg-cyber-700 transition-colors text-scholar-muted hover:text-amber-400"
+            title="重新翻译（深译）"
+          >
+            <RefreshCw size={16} className={isTranslating ? 'animate-spin' : ''} />
+          </button>
+          <button
+            onClick={toggleTranslatePanel}
+            className="p-1.5 rounded-md hover:bg-cyber-700 transition-colors text-scholar-muted hover:text-scholar-text"
+            title="收起"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* 翻译关闭提示 */}
+      {!translateEnabled && (
+        <div className="px-4 py-3 bg-cyber-700/30 border-b border-cyber-700">
+          <div className="flex items-center gap-2 text-amber-400">
+            <ToggleLeft size={16} />
+            <span className="text-sm">实时翻译已关闭</span>
+          </div>
+          <p className="text-xs text-scholar-subtle mt-1">
+            点击开关或编辑器不会触发翻译，节省 token
+          </p>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto p-4">
+        {isTranslating && !translation && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="loading-dots mb-4">
+              <span /><span /><span />
+            </div>
+            <p className="text-sm text-scholar-muted">
+              {aiStatus === 'thinking' ? 'AI 正在思考...' : '正在生成解释...'}
+            </p>
+          </div>
+        )}
+
+        {!isTranslating && !translation && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-cyber-700/50 flex items-center justify-center mb-4">
+              <Lightbulb size={28} className="text-amber-400/60" />
+            </div>
+            <p className="text-sm text-scholar-muted mb-1">
+              {translateEnabled ? '写点代码试试吧' : '翻译功能已关闭'}
+            </p>
+            <p className="text-xs text-scholar-subtle">
+              {translateEnabled 
+                ? '光标停在哪里，AI 就解释哪里' 
+                : '点击开关开启实时翻译'}
+            </p>
+          </div>
+        )}
+
+        {translation && (
+          <div className={`translate-markdown text-sm ${isTranslating ? 'typing-cursor' : ''}`}>
+            <ReactMarkdown
+              components={{
+                code({ inline, className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !inline && match ? (
+                    <SyntaxHighlighter
+                      style={oneDark as any}
+                      language={match[1]}
+                      PreTag="div"
+                      customStyle={{
+                        background: '#0f172a',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                      }}
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+                h1({ children }) {
+                  return (
+                    <h1 className="flex items-center gap-2 text-amber-400">
+                      <Target size={16} />
+                      {children}
+                    </h1>
+                  );
+                },
+                h2({ children }) {
+                  return (
+                    <h2 className="flex items-center gap-2 text-amber-400 mt-6 first:mt-0">
+                      <Zap size={14} />
+                      {children}
+                    </h2>
+                  );
+                },
+              }}
+            >
+              {translation}
+            </ReactMarkdown>
+          </div>
+        )}
+      </div>
+
+      <div className="h-8 border-t border-cyber-700 flex items-center justify-between px-4 shrink-0">
+        <span className="text-[10px] text-scholar-subtle">
+          {isTranslating ? '生成中...' : translation ? '翻译完成' : translateEnabled ? '等待输入' : '已关闭'}
+        </span>
+        <div className="flex items-center gap-1">
+          <div className={`w-1.5 h-1.5 rounded-full ${
+            aiStatus === 'idle' ? 'bg-teal-400' :
+            aiStatus === 'thinking' || aiStatus === 'streaming' ? 'bg-amber-400 animate-pulse' :
+            aiStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
+          }`} />
+          <span className="text-[10px] text-scholar-subtle">
+            {aiStatus === 'idle' ? '就绪' :
+             aiStatus === 'thinking' ? '思考中' :
+             aiStatus === 'streaming' ? '输出中' :
+             aiStatus === 'error' ? '错误' : '离线'}
+          </span>
+        </div>
+      </div>
+    </aside>
+  );
+}
