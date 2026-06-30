@@ -59,7 +59,7 @@ ipcMain.handle('open-folder', async () => {
   return result.filePaths[0];
 });
 
-ipcMain.handle('read-directory', async (event, dirPath) => {
+function readDirectory(dirPath) {
   try {
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
     const items = entries
@@ -75,13 +75,10 @@ ipcMain.handle('read-directory', async (event, dirPath) => {
         return a.name.localeCompare(b.name);
       });
     
-    // 递归读取子目录
     for (const item of items) {
       if (item.isDirectory) {
-        const subItems = await ipcMain.invoke('read-directory', item.path);
-        item.children = subItems;
+        item.children = readDirectory(item.path);
       } else {
-        // 读取文件内容
         try {
           const ext = item.name.split('.').pop()?.toLowerCase();
           if (['py', 'js', 'jsx', 'ts', 'tsx', 'java', 'cpp', 'c', 'html', 'css', 'md', 'txt', 'json'].includes(ext)) {
@@ -97,6 +94,10 @@ ipcMain.handle('read-directory', async (event, dirPath) => {
   } catch {
     return [];
   }
+}
+
+ipcMain.handle('read-directory', async (event, dirPath) => {
+  return readDirectory(dirPath);
 });
 
 ipcMain.handle('read-file', async (event, filePath) => {
@@ -212,12 +213,12 @@ const menuTemplate = [
   {
     label: '帮助',
     submenu: [
-      { label: '关于 Decipher', click: () => {
+      { label: '关于 Yanxi', click: () => {
         dialog.showMessageBox(mainWindow, {
           type: 'info',
-          title: '关于 Decipher',
-          message: 'Decipher - 边写边译 IDE',
-          detail: '一款面向初级开发者的学习型 IDE\n写代码，AI 实时翻译解释\n版本: 1.0.0',
+          title: '关于 Yanxi Code',
+          message: 'Yanxi Code - 边写边译 IDE',
+          detail: '一款面向初级开发者的学习型 IDE\n写代码，AI 实时翻译解释\n版本: 1.1.0',
         });
       }},
     ],
@@ -291,6 +292,22 @@ function createTray() {
     }
   });
 }
+
+// 打开文件选择对话框
+ipcMain.handle('open-file-dialog', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win || mainWindow, {
+    title: '选择要分析的代码文件',
+    defaultPath: app.getPath('desktop'),
+    filters: [
+      { name: '代码文件', extensions: ['py', 'js', 'jsx', 'ts', 'tsx', 'java', 'cpp', 'c', 'h', 'html', 'css', 'md', 'txt', 'json', 'go', 'rs', 'swift', 'kt', 'rb'] },
+      { name: '所有文件', extensions: ['*'] },
+    ],
+    properties: ['openFile'],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
 
 // 画布窗口
 function createCanvasWindow() {

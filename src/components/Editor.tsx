@@ -1,5 +1,7 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Editor from '@monaco-editor/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useStore } from '../store/useStore';
 import { detectLanguage, getMonacoLanguage, extractCodeBlock } from '../utils/codeExtractor';
 import { useDebounce } from '../hooks/useDebounce';
@@ -10,6 +12,7 @@ import logoUrl from '/logo.svg';
 export function CodeEditor() {
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
+  const [mdPreview, setMdPreview] = useState(false);
   const {
     activeFilePath,
     fileContents,
@@ -75,6 +78,20 @@ export function CodeEditor() {
         translate(selection, language, 'deep');
       },
     });
+
+    // 添加右键菜单「查看预览/恢复编辑」(仅MD文件)
+    const activeTabForMenu = openTabs.find(t => t.path === activeFilePath);
+    if (activeTabForMenu?.language === 'markdown') {
+      editor.addAction({
+        id: 'md-preview',
+        label: mdPreview ? '恢复编辑' : '查看预览',
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 2.0,
+        run: function() {
+          setMdPreview(!mdPreview);
+        },
+      });
+    }
   };
 
   // 主题变化时同步 Monaco 主题
@@ -97,6 +114,11 @@ export function CodeEditor() {
       }
     }
   };
+
+  // 文件切换时重置预览状态
+  useEffect(() => {
+    setMdPreview(false);
+  }, [activeFilePath]);
 
   // 文件切换时触发翻译
   useEffect(() => {
@@ -132,36 +154,87 @@ export function CodeEditor() {
           <span className="ml-2 text-xs text-amber-400">● 已修改</span>
         )}
         <span className="ml-3 text-xs text-scholar-subtle uppercase tracking-wider">
-          {language}
+          {mdPreview ? '预览' : language}
         </span>
+        {mdPreview && language === 'markdown' && (
+          <button
+            onClick={() => setMdPreview(false)}
+            className="ml-auto flex items-center gap-1 px-2 py-0.5 text-xs rounded bg-cyber-800 hover:bg-cyber-700 text-scholar-text transition-colors"
+          >
+            恢复编辑
+          </button>
+        )}
       </div>
-      <div className="h-[calc(100%-2rem)]">
-        <Editor
-          key={monacoTheme}
-          height="100%"
-          language={monacoLang}
-          value={currentContent}
-          onChange={handleChange}
-          onMount={handleEditorDidMount}
-          theme={monacoTheme}
-          options={{
-            fontSize: 14,
-            fontFamily: 'Consolas, "JetBrains Mono", "Fira Code", monospace',
-            fontLigatures: true,
-            lineHeight: 21,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            smoothScrolling: true,
-            cursorSmoothCaretAnimation: 'on',
-            renderLineHighlight: 'all',
-            padding: { top: 16, bottom: 16 },
-            automaticLayout: true,
-            tabSize: 2,
-            wordWrap: 'on',
-            bracketPairColorization: { enabled: true },
-            guides: { bracketPairs: true },
-          }}
-        />
+      <div className="h-[calc(100%-2rem)] overflow-auto bg-cyber-900">
+        {mdPreview && language === 'markdown' ? (
+          <div 
+            className="min-h-full p-8 cursor-default"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setMdPreview(false);
+            }}
+          >
+            <article className="prose prose-invert max-w-none
+              prose-headings:text-scholar-text
+              prose-headings:font-semibold
+              prose-h1:text-3xl prose-h1:border-b prose-h1:border-cyber-700 prose-h1:pb-3
+              prose-h2:text-2xl prose-h2:border-b prose-h2:border-cyber-700/50 prose-h2:pb-2
+              prose-h3:text-xl
+              prose-h4:text-lg
+              prose-p:text-scholar-text prose-p:leading-relaxed
+              prose-a:text-teal-400 prose-a:no-underline hover:prose-a:underline
+              prose-code:text-purple-400 prose-code:bg-cyber-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+              prose-pre:bg-cyber-950 prose-pre:rounded-lg prose-pre:border prose-pre:border-cyber-700 prose-pre:p-4 prose-pre:shadow-lg
+              prose-pre:prose-code:bg-transparent prose-pre:prose-code:p-0 prose-pre:prose-code:text-scholar-text
+              prose-blockquote:border-l-4 prose-blockquote:border-teal-500 prose-blockquote:bg-cyber-800/30 prose-blockquote:rounded-r-lg prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:text-scholar-muted prose-blockquote:not-italic
+              prose-strong:text-amber-400 prose-strong:font-semibold
+              prose-ul:text-scholar-text prose-ul:list-disc
+              prose-ol:text-scholar-text prose-ol:list-decimal
+              prose-li:text-scholar-text prose-li:marker:text-purple-400
+              prose-th:text-scholar-text prose-th:bg-cyber-800 prose-th:font-semibold
+              prose-td:text-scholar-muted
+              prose-th:border-cyber-700 prose-td:border-cyber-700
+              prose-table:border-cyber-700 prose-table:rounded-lg prose-table:overflow-hidden
+              prose-hr:border-cyber-700
+              prose-img:rounded-lg prose-img:shadow-lg
+            ">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {currentContent}
+              </ReactMarkdown>
+            </article>
+            <div className="mt-8 pt-4 border-t border-cyber-700 text-center">
+              <p className="text-xs text-scholar-subtle mb-2">右键点击预览区域返回编辑模式</p>
+            </div>
+          </div>
+        ) : (
+          <Editor
+            key={monacoTheme}
+            height="100%"
+            language={monacoLang}
+            value={currentContent}
+            onChange={handleChange}
+            onMount={handleEditorDidMount}
+            theme={monacoTheme}
+            options={{
+              fontSize: 14,
+              fontFamily: 'Consolas, "JetBrains Mono", "Fira Code", monospace',
+              fontLigatures: true,
+              lineHeight: 21,
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              smoothScrolling: true,
+              cursorSmoothCaretAnimation: 'on',
+              renderLineHighlight: 'all',
+              padding: { top: 16, bottom: 16 },
+              automaticLayout: true,
+              tabSize: 2,
+              wordWrap: 'on',
+              bracketPairColorization: { enabled: true },
+              guides: { bracketPairs: true },
+            }}
+          />
+        )}
       </div>
     </div>
   );

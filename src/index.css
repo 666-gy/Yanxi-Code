@@ -296,3 +296,38 @@ body {
 .loading-dots::before {
   content: '翻译中';
 }
+
+/* 跑马灯边框动画 */
+@keyframes marqueeX {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes marqueeY {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-marquee-x {
+  animation: marqueeX 3s linear infinite;
+}
+
+.animate-marquee-x-reverse {
+  animation: marqueeX 3s linear infinite reverse;
+}
+
+.animate-marquee-y {
+  animation: marqueeY 3s linear infinite;
+}
+
+.animate-marquee-y-reverse {
+  animation: marqueeY 3s linear infinite reverse;
+}

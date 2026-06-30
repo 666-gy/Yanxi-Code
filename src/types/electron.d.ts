@@ -13,6 +13,7 @@ interface ElectronAPI {
   sendToMain: (data: any) => Promise<boolean>;
   toggleCanvasWindow: () => Promise<boolean>;
   sendToCanvas: (data: any) => Promise<boolean>;
+  openFileDialog: () => Promise<string | null>;
   
   onMenuAction: (callback: (event: any, action: string) => void) => void;
   onWorkspaceChanged: (callback: (event: any, data: { type: string; filename: string; timestamp: number }) => void) => void;

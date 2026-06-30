@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yanxi Code — 所想即所写，所写即所现</title>
+  <meta name="description" content="Yanxi Code 是一款面向初级开发者的学习型 IDE，AI 实时翻译解释代码，边写边学。">
+  <link rel="icon" type="image/svg+xml" href="../public/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --ink-black: #1A1A2E;
+      --cinnabar: #C41E3A;
+      --paper-white: #F8F5F0;
+      --warm-gray: #E8E3DC;
+      --dark-gray: #2D2D44;
+      --amber: #D4920A;
+      --text-primary: #1A1A2E;
+      --text-secondary: #5A5A72;
+      --text-light: #8A8AA0;
+      --bg: #F8F5F0;
+      --card-bg: #FFFFFF;
+      --border: rgba(26,26,46,0.08);
+      --shadow: 0 1px 3px rgba(26,26,46,0.04), 0 8px 40px rgba(26,26,46,0.06);
+      --shadow-lg: 0 1px 2px rgba(26,26,46,0.04), 0 16px 64px rgba(26,26,46,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.7;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      background: rgba(248,245,240,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1200px; margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      display:flex; align-items:center; gap:10px;
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 700; font-size: 1.25rem;
+      color: var(--ink-black); text-decoration:none;
+    }
+    .nav-logo .dot {
+      width:8px; height:8px; border-radius:50%;
+      background: var(--cinnabar);
+    }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a {
+      text-decoration:none; color: var(--text-secondary);
+      font-size: 0.9rem; font-weight: 400;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--cinnabar); }
+    .nav-cta {
+      background: var(--ink-black); color:#fff;
+      padding: 0.5rem 1.5rem; border-radius: 8px;
+      font-size: 0.85rem; font-weight: 500;
+      text-decoration:none; transition: all 0.3s;
+    }
+    .nav-cta:hover { background: var(--cinnabar); }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 160px 2rem 120px;
+      text-align: center; position:relative;
+      overflow:hidden;
+    }
+    .hero::before {
+      content:''; position:absolute;
+      width:600px; height:600px;
+      background: radial-gradient(circle, rgba(196,30,58,0.06) 0%, transparent 70%);
+      top:-200px; left:50%; transform:translateX(-50%);
+      pointer-events:none;
+    }
+    .hero-badge {
+      display:inline-block; padding:0.25rem 1rem;
+      background: rgba(196,30,58,0.08);
+      color: var(--cinnabar);
+      border-radius: 100px;
+      font-size: 0.8rem; font-weight: 500;
+      margin-bottom: 2rem;
+      letter-spacing: 0.05em;
+    }
+    .hero h1 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900; color: var(--ink-black);
+      line-height: 1.15; letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 .accent { color: var(--cinnabar); }
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-secondary);
+      max-width: 640px; margin:0 auto 2.5rem;
+      font-weight: 300; line-height: 1.8;
+    }
+    .hero-tagline {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.5rem; color: var(--ink-black);
+      font-weight: 600; margin-bottom: 1rem;
+      position:relative;
+    }
+    .hero-tagline::after {
+      content:''; display:block;
+      width:40px; height:3px;
+      background: var(--cinnabar);
+      margin: 1rem auto 0;
+      border-radius: 2px;
+    }
+    .hero-actions { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+    .btn {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 0.85rem 2rem; border-radius: 12px;
+      font-size: 0.95rem; font-weight: 500;
+      text-decoration:none; transition: all 0.3s;
+      cursor:pointer; border:none;
+    }
+    .btn-primary {
+      background: var(--ink-black); color:#fff;
+      box-shadow: 0 4px 20px rgba(26,26,46,0.2);
+    }
+    .btn-primary:hover {
+      background: var(--cinnabar);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(196,30,58,0.3);
+    }
+    .btn-outline {
+      border: 1.5px solid var(--ink-black);
+      color: var(--ink-black); background:transparent;
+    }
+    .btn-outline:hover {
+      background: var(--ink-black); color:#fff;
+      transform: translateY(-2px);
+    }
+
+    /* ── Sections ── */
+    section { padding: 100px 2rem; }
+    .section-inner { max-width: 1200px; margin:0 auto; }
+    .section-label {
+      font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em;
+      color: var(--cinnabar); text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700; color: var(--ink-black);
+      margin-bottom: 1rem; line-height: 1.2;
+    }
+    .section-desc {
+      color: var(--text-secondary);
+      font-size: 1.05rem; max-width: 600px;
+      margin-bottom: 3rem; font-weight: 300;
+    }
+
+    /* ── Features Grid ── */
+    .features-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--card-bg); border-radius: 16px;
+      padding: 2rem; border: 1px solid var(--border);
+      transition: all 0.4s; position:relative;
+      overflow:hidden;
+    }
+    .feature-card::before {
+      content:''; position:absolute;
+      top:0; left:0; right:0; height:2px;
+      background: linear-gradient(90deg, var(--cinnabar), transparent);
+      opacity:0; transition: opacity 0.4s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    .feature-card:hover::before { opacity:1; }
+    .feature-icon {
+      width:48px; height:48px; border-radius:12px;
+      background: rgba(196,30,58,0.06);
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom: 1.25rem;
+    }
+    .feature-icon svg { width:24px; height:24px; color: var(--cinnabar); }
+    .feature-card h3 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.2rem; font-weight: 700;
+      margin-bottom: 0.5rem; color: var(--ink-black);
+    }
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem; font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* ── Flow Section ── */
+    .flow-section { background: var(--card-bg); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .flow-steps {
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:1rem; flex-wrap:wrap; margin-top:2rem;
+    }
+    .flow-step {
+      flex:1; min-width:200px; text-align:center;
+      position:relative;
+    }
+    .flow-step:not(:last-child)::after {
+      content:'';
+      position:absolute; top:28px;
+      left:calc(50% + 30px); width:calc(100% - 60px); height:1px;
+      background: linear-gradient(90deg, rgba(196,30,58,0.3), rgba(196,30,58,0.05));
+    }
+    .flow-num {
+      width:56px; height:56px; border-radius:50%;
+      background: var(--bg); border:2px solid var(--cinnabar);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 1rem;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--cinnabar);
+    }
+    .flow-step h4 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem; font-weight: 600;
+      margin-bottom: 0.3rem; color: var(--ink-black);
+    }
+    .flow-step p { font-size: 0.85rem; color: var(--text-secondary); font-weight:300; }
+
+    /* ── Tech Stack ── */
+    .tech-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .tech-item {
+      background: var(--card-bg); border:1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem 1rem; text-align:center;
+      transition: all 0.3s;
+    }
+    .tech-item:hover { transform: translateY(-2px); box-shadow:var(--shadow); }
+    .tech-item .name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem; font-weight: 500;
+      color: var(--ink-black); margin-bottom:0.25rem;
+    }
+    .tech-item .role {
+      font-size: 0.8rem; color: var(--text-light);
+      font-weight: 300;
+    }
+
+    /* ── Changelog ── */
+    .changelog-list {
+      display:flex; flex-direction:column; gap:1.25rem;
+    }
+    .changelog-item {
+      display:flex; gap:1rem; padding: 1.25rem 1.5rem;
+      background: #fff; border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .changelog-item:hover {
+      box-shadow: var(--shadow);
+      border-color: rgba(196,30,58,0.2);
+    }
+    .changelog-dot {
+      flex-shrink:0; width:8px; height:8px;
+      border-radius:50%; background: var(--cinnabar);
+      margin-top: 0.45rem;
+    }
+    .changelog-body h4 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.05rem; font-weight: 600;
+      color: var(--ink-black); margin-bottom: 0.3rem;
+    }
+    .changelog-body p {
+      font-size: 0.85rem; color: var(--text-secondary);
+      font-weight: 300; line-height: 1.7;
+    }
+
+    /* ── Download ── */
+    .download-section { background: var(--ink-black); color:#fff; }
+    .download-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem; margin-top: 2rem;
+    }
+    .download-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 2rem;
+      transition: all 0.4s; position:relative;
+      overflow:hidden; text-decoration:none; color:inherit;
+      display:block;
+    }
+    .download-card:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--cinnabar);
+      transform: translateY(-2px);
+    }
+    .download-card .platform {
+      font-size:0.75rem; opacity:0.5; letter-spacing:0.1em;
+      margin-bottom: 0.75rem;
+    }
+    .download-card h3 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.35rem; margin-bottom:0.5rem;
+    }
+    .download-card .desc {
+      font-size:0.85rem; opacity:0.6; margin-bottom:1.5rem;
+      line-height:1.6;
+    }
+    .download-card .tag {
+      display:inline-block; padding:0.15rem 0.6rem;
+      border-radius:4px; font-size:0.7rem;
+      background: var(--cinnabar); color:#fff;
+    }
+    .download-releases {
+      margin-top:1.5rem; font-size:0.85rem; opacity:0.5;
+      text-align:center;
+    }
+    .download-releases a { color:var(--cinnabar); }
+    .download-card .filesize {
+      font-size:0.8rem; opacity:0.35; margin-top:0.25rem;
+    }
+
+    /* ── Quick Start ── */
+    .code-block {
+      background: var(--ink-black); border-radius: 16px;
+      padding: 2rem; overflow-x:auto; position:relative;
+      box-shadow: var(--shadow-lg);
+    }
+    .code-block pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem; color: #e2e8f0; line-height: 1.8;
+    }
+    .code-block .comment { color: #64748b; }
+    .code-block .cmd { color: #38bdf8; }
+    .code-block .path { color: #a78bfa; }
+    .code-copy {
+      position:absolute; top:1rem; right:1rem;
+      background: rgba(255,255,255,0.1); border:none;
+      color: rgba(255,255,255,0.5); padding:0.4rem 0.8rem;
+      border-radius:6px; cursor:pointer; font-size:0.75rem;
+      transition: all 0.3s;
+    }
+    .code-copy:hover { background: rgba(255,255,255,0.2); color:#fff; }
+
+    /* ── Shortcuts Table ── */
+    .shortcuts { width:100%; border-collapse:collapse; margin-top:1.5rem; }
+    .shortcuts td {
+      padding: 0.85rem 1.5rem; font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .shortcuts td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; color: var(--cinnabar);
+      font-weight: 500; white-space:nowrap;
+      width: 200px;
+    }
+    .shortcuts td:last-child { color: var(--text-secondary); }
+    .shortcuts tr:last-child td { border-bottom:none; }
+    .shortcuts-wrap {
+      background: var(--card-bg); border-radius:16px;
+      border: 1px solid var(--border); overflow:hidden;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 2rem; text-align:center;
+      border-top: 1px solid var(--border);
+      color: var(--text-light); font-size:0.85rem; font-weight:300;
+    }
+    footer .brand {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--ink-black); margin-bottom:0.5rem;
+    }
+    footer a { color: var(--text-secondary); text-decoration:none; }
+    footer a:hover { color: var(--cinnabar); }
+
+    /* ── Fade-in animation ── */
+    .reveal {
+      opacity:0; transform:translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* ── Ink splash decoration ── */
+    .ink-splash {
+      position:absolute; pointer-events:none; opacity:0.04;
+      width:400px; height:400px;
+      border-radius: 60% 40% 65% 35% / 55% 45% 55% 45%;
+      background: var(--ink-black);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .nav-links { display:none; }
+      .hero { padding: 120px 1rem 80px; }
+      section { padding: 60px 1rem; }
+      .flow-step:not(:last-child)::after { display:none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <span class="dot"></span> Yanxi
+    </a>
+    <ul class="nav-links">
+      <li><a href="#download">下载</a></li>
+      <li><a href="#features">特性</a></li>
+      <li><a href="#changelog">更新公告</a></li>
+      <li><a href="#quickstart">源码构建</a></li>
+    </ul>
+    <a href="https://github.com/666-gy/Yanxi-Code" class="nav-cta" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="ink-splash" style="top:10%;left:5%"></div>
+  <div class="ink-splash" style="bottom:15%;right:5%;width:300px;height:300px;"></div>
+  <span class="hero-badge">v1.1.0  ·  开源免费</span>
+  <h1>
+    写代码，<br>
+    <span class="accent">AI 实时翻译解释</span>
+  </h1>
+  <div class="hero-tagline">所想即所写，所写即所现</div>
+  <p class="hero-subtitle">
+    一款面向初级开发者的学习型 IDE。你一边写，AI 一边帮你理解——
+    编程学习从"查资料"变成"写中学"。
+  </p>
+  <div class="hero-actions">
+    <a href="https://github.com/666-gy/Yanxi-Code" class="btn btn-primary" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+      GitHub
+    </a>
+    <a href="#features" class="btn btn-outline">了解更多</a>
+  </div>
+</section>
+
+<!-- Download -->
+<section id="download" class="download-section">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label" style="color:rgba(255,255,255,0.5);">下载</div>
+    <h2 class="section-title" style="color:#fff;">选择适合你的版本</h2>
+    <p class="section-desc" style="color:rgba(255,255,255,0.5);">Windows 64 位，v1.1.0 · 开源免费，MIT 协议</p>
+    <div class="download-grid">
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.1.0/Yanxi.Setup.1.1.0.exe" class="download-card">
+        <div class="platform">推荐</div>
+        <h3>安装版<span class="tag" style="margin-left:10px;">Setup</span></h3>
+        <p class="desc">标准安装程序，支持自定义路径、桌面快捷方式和开始菜单。一步到位，即刻使用。</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi.Setup.1.1.0.exe</div>
+        <div class="filesize">≈ 112 MB</div>
+      </a>
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.1.0/Yanxi-Portable-1.1.0.exe" class="download-card">
+        <div class="platform">免安装</div>
+        <h3>便携版<span class="tag" style="margin-left:10px;">Portable</span></h3>
+        <p class="desc">解压即用，无需安装。适合放在 U 盘随身携带，不写注册表，干净轻量。</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi.Portable.1.1.0.exe</div>
+        <div class="filesize">≈ 112 MB</div>
+      </a>
+    </div>
+    <div class="download-releases">
+      所有版本可在 <a href="https://github.com/666-gy/Yanxi-Code/releases" target="_blank">GitHub Releases</a> 查看
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">特性</div>
+    <h2 class="section-title" style="margin-bottom:0.5rem;">边写边学，代码不言自明</h2>
+    <p class="section-desc">八个核心能力，为编程学习者量身打造</p>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <h3>边写边译</h3>
+        <p>代码实时 AI 翻译解释，每写一行立即理解。三段式解读：做了什么、知识点、为什么这样写。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h3>多语言支持</h3>
+        <p>覆盖 Python、JavaScript、TypeScript、Java、C/C++、HTML、CSS 等主流编程语言。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3>AI 驱动</h3>
+        <p>基于 DeepSeek 大语言模型，精准解读代码逻辑与设计意图，流式逐字输出。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>Monaco 编辑器</h3>
+        <p>VS Code 同款编辑器内核，语法高亮、行号、智能补全，专业编码体验。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Agent 助手</h3>
+        <p>内置 AI Agent，支持读写、增删改查文件操作，像对话一样管理你的代码。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        </div>
+        <h3>画布模式</h3>
+        <p>Yan Board 画布空间：上传代码文件，AI 智能解析关键逻辑，一目了然。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h3>工作区管理</h3>
+        <p>文件夹即工作区，文件树浏览，多标签页切换，快捷键操作一气呵成。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </div>
+        <h3>深浅主题</h3>
+        <p>深色/浅色主题自由切换，保护视力的同时适配不同编码习惯与工作环境。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Changelog -->
+<section id="changelog" style="background: var(--card-bg); border-top:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">更新公告</div>
+    <h2 class="section-title">v1.1.0 更新内容</h2>
+    <p class="section-desc">2026 年 6 月 30 日发布，多项修复与画布空间重做</p>
+    <div class="changelog-list">
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>重启后 API 配置不记忆</h4>
+          <p>重启 Yanxi Code 后 API Key 配置丢失，须重新配置。已修复 API 密钥持久化存储逻辑，支持从多个 localStorage 键值双保险读取。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>无法识别和打开 HTML 文件</h4>
+          <p>工作区文件树无法识别 .html 文件类型，现已修复文件过滤器逻辑，支持 HTML 文件的打开与编辑。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>画布空间重做 · Yan Board</h4>
+          <p>全新 Yan Board 画布空间上线！写死工作区机制——现在只需点击"上传文件"按钮，选择代码文件，AI 自动解析分析。支持多文件、多 Tab 切换、最近打开历史，去掉不必要的复杂交互。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>Markdown 文件无法预览</h4>
+          <p>工作区中 .md 文件无法渲染预览，现已支持 Markdown 文件的即时预览渲染。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>工作区修复</h4>
+          <p>修复工作区文件夹打开、文件树同步、路径解析等多处稳定性问题，提升整体使用体验。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works" class="flow-section">
+  <div class="section-inner">
+    <div class="section-label">工作原理</div>
+    <h2 class="section-title">写中学，四位一体</h2>
+    <p class="section-desc">从输入代码到理解知识，只需 300 毫秒</p>
+    <div class="flow-steps">
+      <div class="flow-step reveal">
+        <div class="flow-num">1</div>
+        <h4>编写代码</h4>
+        <p>在编辑器中自由编写，就像使用普通 IDE 一样流畅</p>
+      </div>
+      <div class="flow-step reveal">
+        <div class="flow-num">2</div>
+        <h4>智能感知</h4>
+        <p>停顿 300ms 后自动提取光标所在代码块</p>
+      </div>
+      <div class="flow-step reveal">
+        <div class="flow-num">3</div>
+        <h4>AI 解读</h4>
+        <p>DeepSeek 流式返回三段式解释，逐字呈现</p>
+      </div>
+      <div class="flow-step reveal">
+        <div class="flow-num">4</div>
+        <h4>即时理解</h4>
+        <p>右侧面板随时可读，边写边学不断加深</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tech Stack -->
+<section id="tech-stack">
+  <div class="section-inner">
+    <div class="section-label">技术栈</div>
+    <h2 class="section-title">现代技术，极致体验</h2>
+    <p class="section-desc">精选业界最佳实践，构建稳定可靠的学习工具</p>
+    <div class="tech-grid">
+      <div class="tech-item reveal"><div class="name">Electron</div><div class="role">桌面框架</div></div>
+      <div class="tech-item reveal"><div class="name">React 18</div><div class="role">UI 框架</div></div>
+      <div class="tech-item reveal"><div class="name">TypeScript</div><div class="role">类型安全</div></div>
+      <div class="tech-item reveal"><div class="name">Vite</div><div class="role">构建工具</div></div>
+      <div class="tech-item reveal"><div class="name">Tailwind CSS</div><div class="role">样式方案</div></div>
+      <div class="tech-item reveal"><div class="name">Zustand</div><div class="role">状态管理</div></div>
+      <div class="tech-item reveal"><div class="name">Monaco Editor</div><div class="role">代码编辑器</div></div>
+      <div class="tech-item reveal"><div class="name">DeepSeek</div><div class="role">AI 引擎</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 源码构建 -->
+<section id="quickstart" style="background: var(--card-bg); border-top:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">源码构建</div>
+    <h2 class="section-title">开发者从这里开始</h2>
+    <p class="section-desc">参与贡献或自己动手构建，Node.js 18+ 即可</p>
+    <div class="code-block">
+      <button class="code-copy" onclick="copyCode()">复制</button>
+      <pre><span class="comment"># 1. 克隆仓库</span>
+<span class="cmd">git clone</span> <span class="path">https://github.com/666-gy/Yanxi-Code.git</span>
+
+<span class="comment"># 2. 安装依赖并启动</span>
+<span class="cmd">npm install && npm run dev</span>
+
+<span class="comment"># 3. 打包桌面应用</span>
+<span class="cmd">npm run electron:build</span></pre>
+    </div>
+
+    <div style="margin-top: 3rem;">
+      <h3 style="font-family:'Noto Serif SC',serif;font-size:1.3rem;margin-bottom:1rem;color:var(--ink-black);">快捷键速查</h3>
+      <div class="shortcuts-wrap">
+        <table class="shortcuts">
+          <tr><td>Ctrl + N</td><td>新建文件</td></tr>
+          <tr><td>Ctrl + O</td><td>打开文件夹</td></tr>
+          <tr><td>Ctrl + S</td><td>保存文件</td></tr>
+          <tr><td>Ctrl + Shift + A</td><td>打开 Agent 助手</td></tr>
+          <tr><td>Ctrl + B</td><td>切换侧边栏</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="brand">Yanxi Code</div>
+  <p style="margin-bottom:0.5rem;">研磨 · 顿悟 · 修炼</p>
+  <p style="margin-bottom:0.25rem;">
+    <a href="https://github.com/666-gy/Yanxi-Code" target="_blank">GitHub</a>
+    &nbsp;·&nbsp; MIT License
+  </p>
+  <p style="margin-bottom:0.25rem;font-size:0.8rem;">
+    📧 <a href="mailto:1420894553@qq.com">1420894553@qq.com</a>
+    &nbsp;·&nbsp; 🎵 抖音：76857066185
+  </p>
+</footer>
+
+<script>
+  // Scroll reveal animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Copy code
+  function copyCode() {
+    const code = `git clone https://github.com/666-gy/Yanxi-Code.git
+npm install && npm run dev
+npm run electron:build`;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.querySelector('.code-copy');
+      btn.textContent = '✓ 已复制';
+      setTimeout(() => { btn.textContent = '复制'; }, 2000);
+    });
+  }
+
+  // Nav shadow on scroll
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    if (window.scrollY > 10) {
+      nav.style.boxShadow = '0 1px 3px rgba(26,26,46,0.06)';
+    } else {
+      nav.style.boxShadow = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>

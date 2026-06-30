@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendToAgent: (data) => ipcRenderer.invoke('send-to-agent', data),
   sendToMain: (data) => ipcRenderer.invoke('send-to-main', data),
   
+  openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
   toggleCanvasWindow: () => ipcRenderer.invoke('toggle-canvas-window'),
   sendToCanvas: (data) => ipcRenderer.invoke('send-to-canvas', data),
   
