@@ -355,6 +355,35 @@
       border: 1px solid var(--border); overflow:hidden;
     }
 
+    /* ── Changelog ── */
+    .changelog-list {
+      display:flex; flex-direction:column; gap:1.25rem;
+    }
+    .changelog-item {
+      display:flex; gap:1rem; padding: 1.25rem 1.5rem;
+      background: #fff; border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .changelog-item:hover {
+      box-shadow: var(--shadow);
+      border-color: rgba(196,30,58,0.2);
+    }
+    .changelog-dot {
+      flex-shrink:0; width:8px; height:8px;
+      border-radius:50%; background: var(--cinnabar);
+      margin-top: 0.45rem;
+    }
+    .changelog-body h4 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.05rem; font-weight: 600;
+      color: var(--ink-black); margin-bottom: 0.3rem;
+    }
+    .changelog-body p {
+      font-size: 0.85rem; color: var(--text-secondary);
+      font-weight: 300; line-height: 1.7;
+    }
+
     /* ── Footer ── */
     footer {
       padding: 3rem 2rem; text-align:center;
@@ -401,12 +430,12 @@
 <nav>
   <div class="nav-inner">
     <a href="#" class="nav-logo">
-      <span class="dot"></span> Yanxi
+      <span class="dot"></span> Yanxi Code
     </a>
     <ul class="nav-links">
       <li><a href="#download">下载</a></li>
       <li><a href="#features">特性</a></li>
-      <li><a href="#how-it-works">工作原理</a></li>
+      <li><a href="#changelog">更新公告</a></li>
       <li><a href="#quickstart">源码构建</a></li>
     </ul>
     <a href="https://github.com/666-gy/Yanxi-Code" class="nav-cta" target="_blank">GitHub</a>
@@ -417,7 +446,7 @@
 <section class="hero">
   <div class="ink-splash" style="top:10%;left:5%"></div>
   <div class="ink-splash" style="bottom:15%;right:5%;width:300px;height:300px;"></div>
-  <span class="hero-badge">v1.0.0  ·  开源免费</span>
+  <span class="hero-badge">v1.1.0  ·  开源免费</span>
   <h1>
     写代码，<br>
     <span class="accent">AI 实时翻译解释</span>
@@ -441,20 +470,20 @@
   <div class="section-inner" style="text-align:center;">
     <div class="section-label" style="color:rgba(255,255,255,0.5);">下载</div>
     <h2 class="section-title" style="color:#fff;">选择适合你的版本</h2>
-    <p class="section-desc" style="color:rgba(255,255,255,0.5);">Windows 64 位，v1.0.0 · 开源免费，MIT 协议</p>
+    <p class="section-desc" style="color:rgba(255,255,255,0.5);">Windows 64 位，v1.1.0 · 开源免费，MIT 协议</p>
     <div class="download-grid">
-      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.0.0/Yanxi.Setup.1.0.0.exe" class="download-card">
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.1.0/Yanxi.Setup.1.1.0.exe" class="download-card">
         <div class="platform">推荐</div>
         <h3>安装版<span class="tag" style="margin-left:10px;">Setup</span></h3>
         <p class="desc">标准安装程序，支持自定义路径、桌面快捷方式和开始菜单。一步到位，即刻使用。</p>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Setup 1.0.0.exe</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi.Setup.1.1.0.exe</div>
         <div class="filesize">≈ 112 MB</div>
       </a>
-      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.0.0/Yanxi-Portable-1.0.0.exe" class="download-card">
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.1.0/Yanxi-Portable-1.1.0.exe" class="download-card">
         <div class="platform">免安装</div>
         <h3>便携版<span class="tag" style="margin-left:10px;">Portable</span></h3>
         <p class="desc">解压即用，无需安装。适合放在 U 盘随身携带，不写注册表，干净轻量。</p>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi-Portable-1.0.0.exe</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi.Portable.1.1.0.exe</div>
         <div class="filesize">≈ 112 MB</div>
       </a>
     </div>
@@ -531,7 +560,51 @@
   </div>
 </section>
 
-<!-- How It Works -->
+<!-- Changelog -->
+<section id="changelog" style="background: var(--card-bg); border-top:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">更新公告</div>
+    <h2 class="section-title">v1.1.0 更新内容</h2>
+    <p class="section-desc">2026 年 6 月 30 日发布，多项修复与画布空间重做</p>
+    <div class="changelog-list">
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>重启后 API 配置不记忆</h4>
+          <p>重启 Yanxi Code 后 API Key 配置丢失，须重新配置。已修复 API 密钥持久化存储逻辑，支持从多个 localStorage 键值双保险读取。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>无法识别和打开 HTML 文件</h4>
+          <p>工作区文件树无法识别 .html 文件类型，现已修复文件过滤器逻辑，支持 HTML 文件的打开与编辑。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>画布空间重做</h4>
+          <p>全新 Yan Board 画布空间上线！写死工作区机制——现在只需点击"上传文件"按钮，选择代码文件，AI 自动解析分析。支持多文件、多 Tab 切换、最近打开历史，去掉不必要的复杂交互。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>Markdown 文件无法预览</h4>
+          <p>工作区中 .md 文件无法渲染预览，现已支持 Markdown 文件的即时预览渲染。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>工作区修复</h4>
+          <p>修复工作区文件夹打开、文件树同步、路径解析等多处稳定性问题，提升整体使用体验。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <section id="how-it-works" class="flow-section">
   <div class="section-inner">
     <div class="section-label">工作原理</div>
@@ -618,9 +691,13 @@
 <footer>
   <div class="brand">Yanxi Code</div>
   <p style="margin-bottom:0.5rem;">研磨 · 顿悟 · 修炼</p>
-  <p>
+  <p style="margin-bottom:0.25rem;">
     <a href="https://github.com/666-gy/Yanxi-Code" target="_blank">GitHub</a>
     &nbsp;·&nbsp; MIT License
+  </p>
+  <p style="margin-bottom:0.25rem;font-size:0.8rem;">
+    📧 <a href="mailto:1420894553@qq.com">1420894553@qq.com</a>
+    &nbsp;·&nbsp; 🎵 抖音：76857066185
   </p>
 </footer>
 
