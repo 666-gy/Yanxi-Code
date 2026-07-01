@@ -495,34 +495,36 @@ function compareVersions(a, b) {
 }
 
 ipcMain.handle('check-update', async () => {
-  return new Promise((resolve) => {
-    const req = https.get(UPDATE_CHECK_URL, { timeout: 8000 }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const remote = JSON.parse(data);
-          const current = app.getVersion();
-          const hasUpdate = compareVersions(remote.version, current) > 0;
-          resolve({
-            success: true,
-            hasUpdate,
-            currentVersion: current,
-            latestVersion: remote.version,
-            downloadUrl: remote.url || 'https://yanxicode.jhhcn.icu/download',
-            notes: remote.notes || '',
-          });
-        } catch (e) {
-          resolve({ success: false, error: '版本信息解析失败' });
-        }
-      });
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(UPDATE_CHECK_URL, {
+      signal: controller.signal,
+      headers: { 'Accept': 'application/json' },
     });
-    req.on('error', () => {
-      resolve({ success: false, error: '网络连接失败，请检查网络或使用代理' });
-    });
-    req.on('timeout', () => {
-      req.destroy();
-      resolve({ success: false, error: '连接超时，请检查网络' });
-    });
-  });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return { success: false, error: `服务器返回 ${response.status}` };
+    }
+
+    const text = await response.text();
+    // 去掉可能的 BOM 头
+    const cleanText = text.replace(/^\uFEFF/, '').trim();
+    const remote = JSON.parse(cleanText);
+
+    const current = app.getVersion();
+    const hasUpdate = compareVersions(remote.version, current) > 0;
+    return {
+      success: true,
+      hasUpdate,
+      currentVersion: current,
+      latestVersion: remote.version,
+      downloadUrl: remote.url || 'https://yanxicode.jhhcn.icu/download',
+      notes: remote.notes || '',
+    };
+  } catch (e) {
+    return { success: false, error: `检查更新失败: ${e.message}` };
+  }
 });

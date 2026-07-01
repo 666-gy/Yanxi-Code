@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, RefreshCw, GraduationCap, Lightbulb, Target, Zap, ToggleLeft, ToggleRight, Info, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -29,8 +29,15 @@ export function TranslatePanel() {
     setTranslateEnabled,
     openTabs,
   } = useStore();
-  
   const { translate } = useDeepSeek();
+  
+  const [toast, setToast] = useState<{
+    type: 'latest' | 'available' | 'error';
+    message: string;
+    version?: string;
+    notes?: string;
+    url?: string;
+  } | null>(null);
 
   const handleManualTranslate = () => {
     if (!activeFilePath) return;
@@ -51,8 +58,16 @@ export function TranslatePanel() {
       const result = await window.electronAPI.checkUpdate();
       if (!result.success) {
         setUpdateResult({ type: 'error', message: result.error || '检查失败' });
+        setToast({ type: 'error', message: result.error || '检查更新失败' });
       } else if (result.hasUpdate) {
         setUpdateResult({
+          type: 'available',
+          message: `发现新版本 v${result.latestVersion}`,
+          version: result.latestVersion,
+          notes: result.notes,
+          url: result.downloadUrl,
+        });
+        setToast({
           type: 'available',
           message: `发现新版本 v${result.latestVersion}`,
           version: result.latestVersion,
@@ -64,19 +79,28 @@ export function TranslatePanel() {
           type: 'latest',
           message: `已是最新版 v${result.currentVersion}`,
         });
-      }
-      // 如果面板是折叠的，自动展开让用户看到结果
-      if (!translatePanelOpen) {
-        toggleTranslatePanel();
+        setToast({
+          type: 'latest',
+          message: `已是最新版 v${result.currentVersion}`,
+        });
       }
     } catch {
       setUpdateResult({ type: 'error', message: '检查更新失败' });
+      setToast({ type: 'error', message: '检查更新失败' });
     }
     setUpdating(false);
   };
 
-  if (!translatePanelOpen) {
-    return (
+  // 弹窗自动消失
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  return (
+    <>
+      {!translatePanelOpen ? (
       <div className="w-10 bg-cyber-800 border-l border-cyber-700 flex flex-col items-center py-4 shrink-0">
         <button
           onClick={toggleTranslatePanel}
@@ -106,10 +130,7 @@ export function TranslatePanel() {
           {updating ? <Loader2 size={20} className="animate-spin text-amber-400" /> : <Info size={20} />}
         </button>
       </div>
-    );
-  }
-
-  return (
+      ) : (
     <aside className="w-96 min-w-[300px] bg-cyber-800 border-l border-cyber-700 flex flex-col">
       <div className="h-12 border-b border-cyber-700 flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-2">
@@ -294,5 +315,48 @@ export function TranslatePanel() {
         </div>
       </div>
     </aside>
+      )}
+    {/* 右下角 Toast 弹窗 */}
+    {toast && (
+      <div
+        className={`fixed bottom-6 right-6 z-[999] max-w-sm rounded-xl shadow-2xl border backdrop-blur-md animate-slide-up ${
+          toast.type === 'available' ? 'bg-amber-500/95 border-amber-400 text-amber-950' :
+          toast.type === 'error' ? 'bg-red-500/95 border-red-400 text-white' :
+          'bg-green-500/95 border-green-400 text-white'
+        }`}
+      >
+        <div className="flex items-start justify-between p-4 gap-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className={`mt-0.5 shrink-0 rounded-full p-1.5 ${
+              toast.type === 'available' ? 'bg-amber-400/30' :
+              toast.type === 'error' ? 'bg-white/20' : 'bg-white/20'
+            }`}>
+              <Info size={16} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">{toast.message}</p>
+              {toast.notes && (
+                <p className="text-xs mt-1 opacity-80 line-clamp-2">{toast.notes}</p>
+              )}
+              {toast.type === 'available' && toast.url && (
+                <button
+                  onClick={() => { window.electronAPI ? window.open(toast.url, '_blank') : null; }}
+                  className="mt-2 px-3 py-1 text-xs font-medium rounded-md bg-amber-950/20 hover:bg-amber-950/30 transition-colors"
+                >
+                  前往下载
+                </button>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => setToast(null)}
+            className="shrink-0 p-1 rounded-md hover:bg-black/10 transition-colors opacity-60 hover:opacity-100"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
