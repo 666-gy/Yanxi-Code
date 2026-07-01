@@ -1,12 +1,21 @@
-import { X, RefreshCw, BookOpen, Lightbulb, Target, Zap, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useState } from 'react';
+import { X, RefreshCw, GraduationCap, Lightbulb, Target, Zap, ToggleLeft, ToggleRight, Info, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useStore } from '../store/useStore';
 import { useDeepSeek } from '../hooks/useDeepSeek';
-import { extractCodeBlock, detectLanguage } from '../utils/codeExtractor';
+import { detectLanguage, extractSingleLine } from '../utils/codeExtractor';
 
 export function TranslatePanel() {
+  const [updating, setUpdating] = useState(false);
+  const [updateResult, setUpdateResult] = useState<{
+    type: 'checking' | 'latest' | 'available' | 'error';
+    message: string;
+    version?: string;
+    notes?: string;
+    url?: string;
+  } | null>(null);
   const {
     translation,
     isTranslating,
@@ -28,10 +37,38 @@ export function TranslatePanel() {
     const content = fileContents[activeFilePath] || '';
     const activeTab = openTabs.find(t => t.path === activeFilePath);
     const language = activeTab?.language || detectLanguage(activeFilePath);
-    const block = extractCodeBlock(content, cursorPosition.line, language);
-    if (block.content.trim()) {
-      translate(block.content, language, 'deep');
+    const { content: lineContent } = extractSingleLine(content, cursorPosition.line, language);
+    if (lineContent.trim()) {
+      translate(lineContent.trim(), language, 'deep');
     }
+  };
+
+  const handleCheckUpdate = async () => {
+    if (updating || !window.electronAPI?.checkUpdate) return;
+    setUpdating(true);
+    setUpdateResult({ type: 'checking', message: '正在检查更新...' });
+    try {
+      const result = await window.electronAPI.checkUpdate();
+      if (!result.success) {
+        setUpdateResult({ type: 'error', message: result.error || '检查失败' });
+      } else if (result.hasUpdate) {
+        setUpdateResult({
+          type: 'available',
+          message: `发现新版本 v${result.latestVersion}`,
+          version: result.latestVersion,
+          notes: result.notes,
+          url: result.downloadUrl,
+        });
+      } else {
+        setUpdateResult({
+          type: 'latest',
+          message: `已是最新版 v${result.currentVersion}`,
+        });
+      }
+    } catch {
+      setUpdateResult({ type: 'error', message: '检查更新失败' });
+    }
+    setUpdating(false);
   };
 
   if (!translatePanelOpen) {
@@ -40,20 +77,29 @@ export function TranslatePanel() {
         <button
           onClick={toggleTranslatePanel}
           className="p-2 rounded-lg hover:bg-cyber-700 transition-colors text-amber-400"
-          title="展开翻译面板"
+          title="展开 Yan Teach"
         >
-          <BookOpen size={20} />
+          <GraduationCap size={20} />
         </button>
         <button
           onClick={() => setTranslateEnabled(!translateEnabled)}
           className="p-2 mt-2 rounded-lg hover:bg-cyber-700 transition-colors"
-          title={translateEnabled ? '关闭自动翻译' : '开启自动翻译'}
+          title={translateEnabled ? '关闭逐行翻译' : '开启逐行翻译'}
         >
           {translateEnabled ? (
             <ToggleRight size={20} className="text-amber-400" />
           ) : (
             <ToggleLeft size={20} className="text-scholar-subtle" />
           )}
+        </button>
+        <div className="flex-1" />
+        <button
+          onClick={handleCheckUpdate}
+          disabled={updating}
+          className="p-2 mb-2 rounded-lg hover:bg-cyber-700 transition-colors text-scholar-subtle hover:text-amber-400 disabled:opacity-50"
+          title="检查更新"
+        >
+          {updating ? <Loader2 size={20} className="animate-spin text-amber-400" /> : <Info size={20} />}
         </button>
       </div>
     );
@@ -64,11 +110,11 @@ export function TranslatePanel() {
       <div className="h-12 border-b border-cyber-700 flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-            <BookOpen size={15} className="text-cyber-950" />
+            <GraduationCap size={15} className="text-cyber-950" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-scholar-text">AI 译</h2>
-            <p className="text-[10px] text-scholar-subtle">边写边译 · 实时解释</p>
+            <h2 className="text-sm font-semibold text-scholar-text">Yan Teach</h2>
+            <p className="text-[10px] text-scholar-subtle">边写边译 · AI 逐行教学</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -80,7 +126,7 @@ export function TranslatePanel() {
                 ? 'bg-amber-500/20 text-amber-400' 
                 : 'text-scholar-subtle hover:bg-cyber-700'
             }`}
-            title={translateEnabled ? '点击关闭实时翻译' : '点击开启实时翻译'}
+            title={translateEnabled ? '点击关闭逐行翻译' : '点击开启逐行翻译'}
           >
             {translateEnabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
           </button>
@@ -101,15 +147,48 @@ export function TranslatePanel() {
         </div>
       </div>
 
+      {/* 更新通知 */}
+      {updateResult && (
+        <div className={`px-4 py-3 border-b border-cyber-700 ${
+          updateResult.type === 'available' ? 'bg-amber-500/10 border-amber-500/30' :
+          updateResult.type === 'error' ? 'bg-red-500/10 border-red-500/30' :
+          updateResult.type === 'latest' ? 'bg-green-500/10 border-green-500/30' :
+          'bg-cyber-700/30'
+        }`}>
+          <div className="flex items-center gap-2">
+            {updateResult.type === 'available' && <Info size={15} className="text-amber-400" />}
+            {updateResult.type === 'checking' && <Loader2 size={15} className="text-amber-400 animate-spin" />}
+            {updateResult.type === 'latest' && <Info size={15} className="text-green-400" />}
+            {updateResult.type === 'error' && <Info size={15} className="text-red-400" />}
+            <span className={`text-sm font-medium ${
+              updateResult.type === 'available' ? 'text-amber-400' :
+              updateResult.type === 'error' ? 'text-red-400' :
+              'text-green-400'
+            }`}>{updateResult.message}</span>
+          </div>
+          {updateResult.notes && (
+            <p className="text-xs text-scholar-subtle mt-1">{updateResult.notes}</p>
+          )}
+          {updateResult.type === 'available' && updateResult.url && (
+            <button
+              onClick={() => { window.electronAPI ? window.open(updateResult.url, '_blank') : null; }}
+              className="mt-2 px-3 py-1 text-xs font-medium rounded-md bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors"
+            >
+              前往下载
+            </button>
+          )}
+        </div>
+      )}
+
       {/* 翻译关闭提示 */}
       {!translateEnabled && (
         <div className="px-4 py-3 bg-cyber-700/30 border-b border-cyber-700">
           <div className="flex items-center gap-2 text-amber-400">
             <ToggleLeft size={16} />
-            <span className="text-sm">实时翻译已关闭</span>
+            <span className="text-sm">逐行翻译已关闭</span>
           </div>
           <p className="text-xs text-scholar-subtle mt-1">
-            点击开关或编辑器不会触发翻译，节省 token
+            点击开关开启后，换行时自动翻译上一行
           </p>
         </div>
       )}
@@ -135,9 +214,9 @@ export function TranslatePanel() {
               {translateEnabled ? '写点代码试试吧' : '翻译功能已关闭'}
             </p>
             <p className="text-xs text-scholar-subtle">
-              {translateEnabled 
-                ? '光标停在哪里，AI 就解释哪里' 
-                : '点击开关开启实时翻译'}
+              {translateEnabled
+                ? '换行时自动翻译上一行代码'
+                : '点击开关开启逐行翻译'}
             </p>
           </div>
         )}

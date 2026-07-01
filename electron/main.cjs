@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, Tray } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 
 // 设置AppUserModelId，确保Windows任务栏图标正确显示
 app.setAppUserModelId('com.yanxi.code');
@@ -218,7 +219,7 @@ const menuTemplate = [
           type: 'info',
           title: '关于 Yanxi Code',
           message: 'Yanxi Code - 边写边译 IDE',
-          detail: '一款面向初级开发者的学习型 IDE\n写代码，AI 实时翻译解释\n版本: 1.1.0',
+          detail: '一款面向初级开发者的学习型 IDE\n写代码，AI 实时翻译解释\n版本: 1.2.0',
         });
       }},
     ],
@@ -476,4 +477,52 @@ ipcMain.handle('send-to-main', async (event, data) => {
     return true;
   }
   return false;
+});
+
+// ═══════════════════════════════════════
+// 检查更新
+// ═══════════════════════════════════════
+const UPDATE_CHECK_URL = 'https://yanxicode.jhhcn.icu/version.json';
+
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] > pb[i]) return 1;
+    if (pa[i] < pb[i]) return -1;
+  }
+  return 0;
+}
+
+ipcMain.handle('check-update', async () => {
+  return new Promise((resolve) => {
+    const req = https.get(UPDATE_CHECK_URL, { timeout: 8000 }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const remote = JSON.parse(data);
+          const current = app.getVersion();
+          const hasUpdate = compareVersions(remote.version, current) > 0;
+          resolve({
+            success: true,
+            hasUpdate,
+            currentVersion: current,
+            latestVersion: remote.version,
+            downloadUrl: remote.url || 'https://yanxicode.jhhcn.icu/download',
+            notes: remote.notes || '',
+          });
+        } catch (e) {
+          resolve({ success: false, error: '版本信息解析失败' });
+        }
+      });
+    });
+    req.on('error', () => {
+      resolve({ success: false, error: '网络连接失败，请检查网络或使用代理' });
+    });
+    req.on('timeout', () => {
+      req.destroy();
+      resolve({ success: false, error: '连接超时，请检查网络' });
+    });
+  });
 });

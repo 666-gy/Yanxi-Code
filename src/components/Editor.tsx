@@ -3,8 +3,7 @@ import Editor from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useStore } from '../store/useStore';
-import { detectLanguage, getMonacoLanguage, extractCodeBlock } from '../utils/codeExtractor';
-import { useDebounce } from '../hooks/useDebounce';
+import { detectLanguage, getMonacoLanguage, extractSingleLine } from '../utils/codeExtractor';
 import { useDeepSeek } from '../hooks/useDeepSeek';
 import { useTheme } from '../hooks/useTheme';
 import logoUrl from '/logo.svg';
@@ -34,14 +33,7 @@ export function CodeEditor() {
   const currentContent = activeFilePath ? fileContents[activeFilePath] || '' : '';
   const language = activeTab?.language || 'plaintext';
   const monacoLang = getMonacoLanguage(language);
-
-  const debouncedTranslate = useDebounce((code: string, line: number, lang: string) => {
-    if (!settings.autoTranslate || !settings.apiKey || !translateEnabled) return;
-    const block = extractCodeBlock(code, line, lang);
-    if (block.content.trim()) {
-      translate(block.content, lang, 'auto');
-    }
-  }, settings.debounceMs);
+  const lastLineRef = useRef<number>(1);
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
@@ -52,6 +44,23 @@ export function CodeEditor() {
         line: e.position.lineNumber,
         column: e.position.column,
       });
+
+      // 光标换行时触发翻译上一行
+      if (
+        settings.autoTranslate &&
+        settings.apiKey &&
+        translateEnabled &&
+        e.position.lineNumber !== lastLineRef.current
+      ) {
+        const prevLine = lastLineRef.current;
+        lastLineRef.current = e.position.lineNumber;
+
+        const content = editor.getValue();
+        const { content: lineContent } = extractSingleLine(content, prevLine, language);
+        if (lineContent.trim()) {
+          translate(lineContent.trim(), language, 'auto');
+        }
+      }
     });
 
     editor.onDidChangeCursorSelection((e: any) => {
@@ -104,14 +113,6 @@ export function CodeEditor() {
   const handleChange = (value: string | undefined) => {
     if (activeFilePath && value !== undefined) {
       setFileContent(activeFilePath, value);
-      
-      const editor = editorRef.current;
-      if (editor && translateEnabled) {
-        const position = editor.getPosition();
-        if (position && value.trim()) {
-          debouncedTranslate(value, position.lineNumber, language);
-        }
-      }
     }
   };
 
@@ -120,14 +121,15 @@ export function CodeEditor() {
     setMdPreview(false);
   }, [activeFilePath]);
 
-  // 文件切换时触发翻译
+  // 文件切换时重置行号并触发当前行翻译
   useEffect(() => {
     if (editorRef.current && activeFilePath && currentContent.trim() && translateEnabled) {
       const position = editorRef.current.getPosition();
+      lastLineRef.current = position?.lineNumber || 1;
       if (position && settings.autoTranslate && settings.apiKey) {
-        const block = extractCodeBlock(currentContent, position.lineNumber, language);
-        if (block.content.trim()) {
-          translate(block.content, language, 'auto');
+        const { content: lineContent } = extractSingleLine(currentContent, position.lineNumber, language);
+        if (lineContent.trim()) {
+          translate(lineContent.trim(), language, 'auto');
         }
       }
     }

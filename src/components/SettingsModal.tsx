@@ -112,7 +112,7 @@ export function SettingsModal() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-scholar-text">自动翻译</p>
-                  <p className="text-xs text-scholar-subtle">写代码时自动触发翻译</p>
+                  <p className="text-xs text-scholar-subtle">换行时自动翻译上一行代码</p>
                 </div>
                 <button
                   onClick={() =>

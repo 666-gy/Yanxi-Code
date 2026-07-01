@@ -35,4 +35,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onFromAgent: (callback) => {
     ipcRenderer.on('from-agent', callback);
   },
+
+  checkUpdate: () => ipcRenderer.invoke('check-update'),
 });

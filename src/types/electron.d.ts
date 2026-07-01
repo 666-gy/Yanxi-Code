@@ -19,6 +19,18 @@ interface ElectronAPI {
   onWorkspaceChanged: (callback: (event: any, data: { type: string; filename: string; timestamp: number }) => void) => void;
   onFromMainWindow: (callback: (event: any, data: any) => void) => void;
   onFromAgent: (callback: (event: any, data: any) => void) => void;
+
+  checkUpdate: () => Promise<UpdateResult>;
+}
+
+interface UpdateResult {
+  success: boolean;
+  hasUpdate?: boolean;
+  currentVersion?: string;
+  latestVersion?: string;
+  downloadUrl?: string;
+  notes?: string;
+  error?: string;
 }
 
 interface FileNode {

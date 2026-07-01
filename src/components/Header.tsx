@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, PanelLeftClose, PanelLeftOpen, Sparkles, FolderOpen, FilePlus, ToggleLeft, ToggleRight, RefreshCw, X, Bot, BookOpen } from 'lucide-react';
+import { Settings, PanelLeftClose, PanelLeftOpen, Sparkles, FolderOpen, FilePlus, ToggleLeft, ToggleRight, RefreshCw, X, Bot } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import logoUrl from '/logo.svg';
 
@@ -152,12 +152,12 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        {/* 画布药丸按钮 */}
+        {/* Yan Board 药丸按钮 */}
         {isElectron && (
           <button
             onClick={() => window.electronAPI?.toggleCanvasWindow()}
             className="relative flex items-center gap-1.5 px-3 py-1 rounded-full overflow-hidden group hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
-            title="打开画布"
+            title="打开 Yan Board"
           >
             {/* 流动画背景 - 紫色系 */}
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-purple-400 to-purple-500" />
@@ -165,8 +165,12 @@ export function Header() {
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
             
             <div className="relative flex items-center gap-1.5">
-              <BookOpen size={14} className="text-cyber-950" />
-              <span className="text-xs font-semibold text-cyber-950">画布</span>
+              <svg width="14" height="14" viewBox="0 0 32 32" fill="none" className="shrink-0">
+                <circle cx="13" cy="13" r="9.5" stroke="currentColor" strokeWidth="2.2" />
+                <line x1="19.8" y1="19.8" x2="27" y2="27" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+                <circle cx="13" cy="13" r="3" fill="currentColor" opacity="0.18" />
+              </svg>
+              <span className="text-xs font-semibold text-cyber-950">Yan Board</span>
             </div>
           </button>
         )}
@@ -190,11 +194,11 @@ export function Header() {
           </button>
         )}
 
-        {/* 翻译开关 */}
+        {/* Yan Teach 开关 */}
         <div 
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyber-800/50 cursor-pointer hover:bg-cyber-800 transition-colors"
           onClick={() => setTranslateEnabled(!translateEnabled)}
-          title={translateEnabled ? '点击关闭实时翻译' : '点击开启实时翻译'}
+          title={translateEnabled ? '点击关闭 Yan Teach' : '点击开启 Yan Teach'}
         >
           {translateEnabled ? (
             <ToggleRight size={16} className="text-amber-400" />
@@ -202,7 +206,7 @@ export function Header() {
             <ToggleLeft size={16} className="text-scholar-subtle" />
           )}
           <span className={`text-xs ${translateEnabled ? 'text-amber-400' : 'text-scholar-subtle'}`}>
-            {translateEnabled ? '翻译开启' : '翻译关闭'}
+            {translateEnabled ? 'Teach 开启' : 'Teach 关闭'}
           </span>
         </div>
 

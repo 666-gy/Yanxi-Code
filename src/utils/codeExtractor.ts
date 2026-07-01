@@ -49,7 +49,7 @@ export function extractCodeBlock(
 ): CodeBlock {
   const lines = code.split('\n');
   const currentLineIdx = lineNumber - 1;
-  
+
   if (currentLineIdx < 0 || currentLineIdx >= lines.length) {
     return { content: code, startLine: 1, endLine: lines.length, language };
   }
@@ -132,4 +132,39 @@ function getIndentLevel(line: string): number {
     else break;
   }
   return count;
+}
+
+/**
+ * 提取指定行的代码内容，用于逐行翻译
+ * 如果该行为空或只是括号/分号等，会尝试向上找最近的有效代码行
+ */
+export function extractSingleLine(
+  code: string,
+  lineNumber: number,
+  _language: string
+): { content: string; line: number } {
+  const lines = code.split('\n');
+  const idx = lineNumber - 1;
+
+  if (idx < 0 || idx >= lines.length) {
+    return { content: '', line: lineNumber };
+  }
+
+  let targetIdx = idx;
+  let line = lines[targetIdx].trim();
+
+  // 如果当前行为空或只是符号，向上找最近的有内容行
+  while (
+    targetIdx > 0 &&
+    (!line || line === '{' || line === '}' || line === '(' || line === ')' || line === ';')
+  ) {
+    targetIdx--;
+    line = lines[targetIdx].trim();
+  }
+
+  if (!line || line === '{' || line === '}' || line === '(' || line === ')' || line === ';') {
+    return { content: '', line: targetIdx + 1 };
+  }
+
+  return { content: lines[targetIdx], line: targetIdx + 1 };
 }

@@ -1,6 +1,6 @@
 {
   "name": "decipher",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Yanxi Code - 边写边译 IDE",
   "main": "electron/main.cjs",
   "author": "Decipher",
@@ -60,7 +60,7 @@
     "appId": "com.yanxi.code",
     "productName": "Yanxi",
     "directories": {
-      "output": "release_new"
+      "output": "release"
     },
     "files": [
       "electron/**/*",
