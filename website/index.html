@@ -342,14 +342,23 @@
     .download-card .filesize {
       font-size:0.8rem; opacity:0.35; margin-top:0.25rem;
     }
-    .dl-alt {
-      font-size:0.7rem; opacity:0.3; margin-top:1rem;
-      padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.06);
-      transition: opacity 0.3s;
+    .download-cloud {
+      margin-top: 2.5rem;
+      padding: 1.25rem 2rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      text-align: center;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
     }
-    .download-card:hover .dl-alt { opacity:0.5; }
-    .dl-alt a { color:var(--cinnabar); text-decoration:none; }
-    .dl-alt a:hover { text-decoration:underline; }
+    .download-cloud a {
+      color: var(--cinnabar);
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 0.25rem;
+    }
+    .download-cloud a:hover { text-decoration: underline; }
 
     /* ── Quick Start ── */
     .code-block {
@@ -486,7 +495,6 @@
         <p class="desc">标准安装程序，支持自定义路径、桌面快捷方式和开始菜单。一步到位，即刻使用。<strong>支持自动更新提醒。</strong></p>
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Setup 1.2.0.exe</div>
         <div class="filesize">≈ 112 MB</div>
-        <div class="dl-alt">你的网络不支持访问 GitHub？没关系，<a href="https://pan.baidu.com/s/14kJAdfmEVh6BQZB-NpVeBw?pwd=code" target="_blank">点击这里：网盘下载</a></div>
       </a>
       <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.2.0/Yanxi-Portable-1.2.0.exe" class="download-card">
         <div class="platform">免安装</div>
@@ -494,8 +502,14 @@
         <p class="desc">解压即用，无需安装。适合放在 U 盘随身携带，不写注册表，干净轻量。</p>
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Portable 1.2.0.exe</div>
         <div class="filesize">≈ 112 MB</div>
-        <div class="dl-alt">你的网络不支持访问 GitHub？没关系，<a href="https://pan.baidu.com/s/1jDJzXlRuwDOfkGBgCKhGrw?pwd=code" target="_blank">点击这里：网盘下载</a></div>
       </a>
+    </div>
+    <div class="download-cloud">
+      <p>你的网络不支持访问 GitHub？没关系，点击这里下载
+        <a href="https://pan.baidu.com/s/14kJAdfmEVh6BQZB-NpVeBw?pwd=code" target="_blank">安装版</a>
+        或
+        <a href="https://pan.baidu.com/s/1jDJzXlRuwDOfkGBgCKhGrw?pwd=code" target="_blank">便携版</a>
+      </p>
     </div>
     <div class="download-releases">
       所有版本可在 <a href="https://github.com/666-gy/Yanxi-Code/releases" target="_blank">GitHub Releases</a> 查看
