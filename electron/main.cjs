@@ -496,11 +496,23 @@ function compareVersions(a, b) {
 
 ipcMain.handle('check-update', async () => {
   return new Promise((resolve) => {
-    const req = https.get(UPDATE_CHECK_URL, { timeout: 10000 }, (res) => {
+    const req = https.get(UPDATE_CHECK_URL, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'YanxiCode/1.0 (Windows NT 10.0; Win64; x64)',
+        'Accept': 'application/json',
+      }
+    }, (res) => {
       // 处理重定向
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         const redirectUrl = res.headers.location;
-        https.get(redirectUrl, { timeout: 10000 }, (res2) => {
+        https.get(redirectUrl, {
+          timeout: 10000,
+          headers: {
+            'User-Agent': 'YanxiCode/1.0 (Windows NT 10.0; Win64; x64)',
+            'Accept': 'application/json',
+          }
+        }, (res2) => {
           let data = '';
           res2.on('data', chunk => data += chunk);
           res2.on('end', () => {
