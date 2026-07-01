@@ -65,6 +65,10 @@ export function TranslatePanel() {
           message: `已是最新版 v${result.currentVersion}`,
         });
       }
+      // 如果面板是折叠的，自动展开让用户看到结果
+      if (!translatePanelOpen) {
+        toggleTranslatePanel();
+      }
     } catch {
       setUpdateResult({ type: 'error', message: '检查更新失败' });
     }
