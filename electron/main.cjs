@@ -495,36 +495,69 @@ function compareVersions(a, b) {
 }
 
 ipcMain.handle('check-update', async () => {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+  return new Promise((resolve) => {
+    const req = https.get(UPDATE_CHECK_URL, { timeout: 10000 }, (res) => {
+      // 处理重定向
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        const redirectUrl = res.headers.location;
+        https.get(redirectUrl, { timeout: 10000 }, (res2) => {
+          let data = '';
+          res2.on('data', chunk => data += chunk);
+          res2.on('end', () => {
+            try {
+              const clean = data.replace(/^\uFEFF/, '').trim();
+              const remote = JSON.parse(clean);
+              const current = app.getVersion();
+              const hasUpdate = compareVersions(remote.version, current) > 0;
+              resolve({
+                success: true, hasUpdate,
+                currentVersion: current,
+                latestVersion: remote.version,
+                downloadUrl: remote.url || 'https://yanxicode.jhhcn.icu/download',
+                notes: remote.notes || '',
+              });
+            } catch (e) {
+              resolve({ success: false, error: '版本信息解析失败' });
+            }
+          });
+        }).on('error', () => resolve({ success: false, error: '网络连接失败，请检查网络或使用代理' }));
+        return;
+      }
 
-    const response = await fetch(UPDATE_CHECK_URL, {
-      signal: controller.signal,
-      headers: { 'Accept': 'application/json' },
+      if (res.statusCode !== 200) {
+        resolve({ success: false, error: `服务器返回 ${res.statusCode}` });
+        return;
+      }
+
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          // 去掉 BOM 头
+          const clean = data.replace(/^\uFEFF/, '').trim();
+          const remote = JSON.parse(clean);
+          const current = app.getVersion();
+          const hasUpdate = compareVersions(remote.version, current) > 0;
+          resolve({
+            success: true, hasUpdate,
+            currentVersion: current,
+            latestVersion: remote.version,
+            downloadUrl: remote.url || 'https://yanxicode.jhhcn.icu/download',
+            notes: remote.notes || '',
+          });
+        } catch (e) {
+          console.error('[check-update] JSON parse failed, raw:', data.substring(0, 200));
+          resolve({ success: false, error: `版本信息解析失败 (${e.message})` });
+        }
+      });
     });
-    clearTimeout(timeout);
-
-    if (!response.ok) {
-      return { success: false, error: `服务器返回 ${response.status}` };
-    }
-
-    const text = await response.text();
-    // 去掉可能的 BOM 头
-    const cleanText = text.replace(/^\uFEFF/, '').trim();
-    const remote = JSON.parse(cleanText);
-
-    const current = app.getVersion();
-    const hasUpdate = compareVersions(remote.version, current) > 0;
-    return {
-      success: true,
-      hasUpdate,
-      currentVersion: current,
-      latestVersion: remote.version,
-      downloadUrl: remote.url || 'https://yanxicode.jhhcn.icu/download',
-      notes: remote.notes || '',
-    };
-  } catch (e) {
-    return { success: false, error: `检查更新失败: ${e.message}` };
-  }
+    req.on('error', (e) => {
+      console.error('[check-update] request error:', e.message);
+      resolve({ success: false, error: '网络连接失败，请检查网络或使用代理' });
+    });
+    req.on('timeout', () => {
+      req.destroy();
+      resolve({ success: false, error: '连接超时，请检查网络' });
+    });
+  });
 });
