@@ -29,6 +29,22 @@ build-release
 yanxi-release
 yanxi-new
 
+# Electron build artifacts (unpacked runtime in project root)
+resources/
+locales/
+*.exe
+*.dll
+*.pak
+*.dat
+*.bin
+*.asar
+*.json.blockmap
+snapshot_blob.bin
+v8_context_snapshot.bin
+vk_swiftshader_icd.json
+LICENSES.chromium.html
+LICENSE.electron.txt
+
 # Env
 .env
 .env.local
