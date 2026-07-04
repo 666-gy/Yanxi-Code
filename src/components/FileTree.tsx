@@ -12,6 +12,8 @@ interface FileTreeItemProps {
 
 function FileTreeItem({ file, depth, forceExpand }: FileTreeItemProps) {
   const [expanded, setExpanded] = useState(forceExpand ?? depth === 0);
+  const [children, setChildren] = useState<FileNode[] | undefined>(file.children);
+  const [loading, setLoading] = useState(false);
   const { openTabs, activeFilePath, openFile } = useStore();
 
   useEffect(() => {
@@ -21,12 +23,28 @@ function FileTreeItem({ file, depth, forceExpand }: FileTreeItemProps) {
   const isActive = openTabs.some(t => t.path === file.path) && activeFilePath === file.path;
 
   if (file.isDirectory) {
+    const toggleDirectory = async () => {
+      const next = !expanded;
+      setExpanded(next);
+      if (!next) {
+        setChildren(undefined);
+        return;
+      }
+      if (next && children === undefined && window.electronAPI) {
+        setLoading(true);
+        try {
+          setChildren(await window.electronAPI.readDirectory(file.path));
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
     return (
       <div>
         <div
           className="flex items-center gap-1 px-2 py-1 cursor-pointer hover:bg-cyber-800/50 transition-colors text-scholar-text group"
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
-          onClick={() => setExpanded(!expanded)}
+          onClick={toggleDirectory}
         >
           {expanded ? (
             <ChevronDown size={14} className="text-scholar-subtle shrink-0" />
@@ -40,12 +58,17 @@ function FileTreeItem({ file, depth, forceExpand }: FileTreeItemProps) {
           )}
           <span className="text-sm truncate flex-1">{file.name}</span>
         </div>
-        {expanded && file.children && (
+        {expanded && (
           <div>
-            {file.children.map((child) => (
+            {loading && (
+              <div className="text-xs text-scholar-subtle py-1" style={{ paddingLeft: `${(depth + 1) * 12 + 22}px` }}>
+                正在加载…
+              </div>
+            )}
+            {children?.map((child) => (
               <FileTreeItem key={child.path} file={child} depth={depth + 1} />
             ))}
-            {file.children.length === 0 && (
+            {!loading && children?.length === 0 && (
               <div 
                 className="text-xs text-scholar-subtle italic py-1"
                 style={{ paddingLeft: `${(depth + 1) * 12 + 22}px` }}
@@ -61,8 +84,10 @@ function FileTreeItem({ file, depth, forceExpand }: FileTreeItemProps) {
 
   const lang = detectLanguage(file.name);
 
-  const handleClick = () => {
-    openFile(file.path, file.name, lang, file.content);
+  const handleClick = async () => {
+    if (!window.electronAPI) return;
+    const content = await window.electronAPI.readFile(file.path);
+    if (content !== null) openFile(file.path, file.name, lang, content);
   };
 
   return (
@@ -144,7 +169,7 @@ export function FileTree() {
           </div>
         ) : (
           files.map((file) => (
-            <FileTreeItem key={file.path} file={file} depth={0} forceExpand={true} />
+            <FileTreeItem key={file.path} file={file} depth={0} forceExpand={false} />
           ))
         )}
       </div>

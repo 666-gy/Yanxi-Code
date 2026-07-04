@@ -196,7 +196,7 @@ export function TranslatePanel() {
           )}
           {updateResult.type === 'available' && updateResult.url && (
             <button
-              onClick={() => { window.electronAPI ? window.open(updateResult.url, '_blank') : null; }}
+              onClick={() => { void window.electronAPI?.openExternal(updateResult.url!); }}
               className="mt-2 px-3 py-1 text-xs font-medium rounded-md bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors"
             >
               前往下载
@@ -340,7 +340,7 @@ export function TranslatePanel() {
               )}
               {toast.type === 'available' && toast.url && (
                 <button
-                  onClick={() => { window.electronAPI ? window.open(toast.url, '_blank') : null; }}
+                  onClick={() => { void window.electronAPI?.openExternal(toast.url!); }}
                   className="mt-2 px-3 py-1 text-xs font-medium rounded-md bg-amber-950/20 hover:bg-amber-950/30 transition-colors"
                 >
                   前往下载

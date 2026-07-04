@@ -2,26 +2,32 @@
   "name": "decipher",
   "version": "1.2.9",
   "description": "Yanxi Code - 边写边译 IDE",
+  "desktopName": "yanxi.desktop",
   "main": "electron/main.cjs",
   "author": "Decipher <decipher@yanxi.dev>",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "node scripts/sync-monaco.mjs && vite",
+    "build": "node scripts/sync-monaco.mjs && tsc -b && vite build",
     "lint": "eslint .",
+    "test": "node --test electron/*.test.cjs",
+    "postinstall": "electron-builder install-app-deps",
     "preview": "vite preview",
     "check": "tsc -b --noEmit",
-    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron . --dev\"",
+    "electron:dev": "node scripts/sync-monaco.mjs && concurrently \"vite\" \"wait-on http://localhost:5173 && electron . --dev\"",
     "electron:build": "npm run build && electron-builder",
     "electron:start": "electron ."
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.511.0",
     "monaco-editor": "^0.55.1",
+    "node-pty": "^1.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
@@ -56,6 +62,9 @@
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
     "wait-on": "^8.0.5"
+  },
+  "overrides": {
+    "dompurify": "3.4.11"
   },
   "build": {
     "appId": "com.yanxi.code",
@@ -101,17 +110,26 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "pacman",
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "category": "Development",
       "icon": "build/icon.png",
       "artifactName": "Yanxi-${version}.${ext}",
-      "desktopName": "yanxi.desktop",
       "syncDesktopName": true
     }
   }

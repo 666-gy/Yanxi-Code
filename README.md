@@ -54,6 +54,16 @@ Monaco Editor 驱动（VS Code 同款），三层补全覆盖 8 种语言：
 
 本地 Worker 运行，不依赖 CDN，补全响应稳定。
 
+### 💻 集成终端与一键运行
+
+底部集成完整交互终端，工作目录自动定位到当前工作区。
+
+- Windows 使用 PowerShell / ConPTY，Linux 使用系统默认 Shell
+- 支持 ANSI 彩色输出、中文输入、交互程序、`Ctrl+C` 和终端尺寸同步
+- 一键运行前展示实际命令并要求确认，不会自动安装工具链
+- 支持 Python、JavaScript、TypeScript、Java、C、C++、C#、Go 和 Rust
+- 编译型语言的临时产物保存在系统临时目录，不污染项目
+
 ### 💰 API 用量计费
 
 内置累加计费面板，实时统计所有 AI 功能的 token 消耗和费用：
@@ -142,6 +152,8 @@ npm run electron:build
 | `Ctrl + S` | 保存文件 |
 | `Ctrl + B` | 切换左侧文件树 |
 | `Ctrl + Shift + T` | 打开译行面板 |
+| <kbd>Ctrl</kbd> + <kbd>`</kbd> | 切换集成终端 |
+| `Ctrl + F5` | 确认并运行当前文件 |
 
 ---
 

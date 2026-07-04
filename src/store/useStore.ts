@@ -39,6 +39,8 @@ interface AppState {
   translatePanelOpen: boolean;
   settingsOpen: boolean;
   newFileDialogOpen: boolean;
+  terminalOpen: boolean;
+  runRequest: number;
   
   // Actions - 工作区
   setWorkspacePath: (path: string | null) => void;
@@ -69,6 +71,9 @@ interface AppState {
   closeSettings: () => void;
   openNewFileDialog: () => void;
   closeNewFileDialog: () => void;
+  toggleTerminal: () => void;
+  openTerminal: () => void;
+  requestRun: () => void;
   
   // 新文件
   createNewFile: (name: string) => void;
@@ -125,6 +130,8 @@ export const useStore = create<AppState>()(
       translatePanelOpen: true,
       settingsOpen: false,
       newFileDialogOpen: false,
+      terminalOpen: false,
+      runRequest: 0,
       
       // Actions - 工作区
       setWorkspacePath: (path) => set({ workspacePath: path }),
@@ -161,7 +168,7 @@ export const useStore = create<AppState>()(
         set({
           openTabs: [...state.openTabs, newTab],
           activeFilePath: path,
-          fileContents: content
+          fileContents: content !== undefined
             ? { ...state.fileContents, [path]: content }
             : state.fileContents,
         });
@@ -218,9 +225,6 @@ export const useStore = create<AppState>()(
       updateSettings: (partial) => {
         const newSettings = { ...get().settings, ...partial };
         set({ settings: newSettings });
-        if (partial.apiKey !== undefined) {
-          localStorage.setItem('decipher-api-key', partial.apiKey);
-        }
         if (partial.apiBase !== undefined) {
           localStorage.setItem('decipher-api-base', partial.apiBase);
         }
@@ -236,6 +240,9 @@ export const useStore = create<AppState>()(
       closeSettings: () => set({ settingsOpen: false }),
       openNewFileDialog: () => set({ newFileDialogOpen: true }),
       closeNewFileDialog: () => set({ newFileDialogOpen: false }),
+      toggleTerminal: () => set((state) => ({ terminalOpen: !state.terminalOpen })),
+      openTerminal: () => set({ terminalOpen: true }),
+      requestRun: () => set((state) => ({ terminalOpen: true, runRequest: state.runRequest + 1 })),
       
       createNewFile: async (name) => {
         const state = get();
@@ -260,9 +267,11 @@ export const useStore = create<AppState>()(
         let newPath = state.workspacePath + '/' + name;
         if (window.electronAPI) {
           const createdPath = await window.electronAPI.createFile(state.workspacePath, name, '');
-          if (createdPath) {
-            newPath = createdPath;
+          if (!createdPath) {
+            window.alert('创建失败：文件可能已存在，或文件名不合法。');
+            return;
           }
+          newPath = createdPath;
         }
         
         const content = '';
@@ -284,7 +293,7 @@ export const useStore = create<AppState>()(
     {
       name: 'decipher-storage',
       partialize: (state) => ({
-        settings: state.settings,
+        settings: { ...state.settings, apiKey: '' },
         translateEnabled: state.translateEnabled,
         workspacePath: state.workspacePath,
       }),

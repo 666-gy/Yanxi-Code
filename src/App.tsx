@@ -1,25 +1,37 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
 import { FileTree } from './components/FileTree';
 import { TabBar } from './components/TabBar';
-import { CodeEditor } from './components/Editor';
-import { TranslatePanel } from './components/TranslatePanel';
 import { StatusBar } from './components/StatusBar';
 import { SettingsModal } from './components/SettingsModal';
 import { NewFileDialog } from './components/NewFileDialog';
-import { CanvasPage } from './pages/CanvasPage';
 import { useStore } from './store/useStore';
 import { useTheme } from './hooks/useTheme';
 
+const TerminalPanel = lazy(() => import('./components/TerminalPanel').then((module) => ({ default: module.TerminalPanel })));
+const CanvasPage = lazy(() => import('./pages/CanvasPage').then((module) => ({ default: module.CanvasPage })));
+const CodeEditor = lazy(() => import('./components/Editor').then((module) => ({ default: module.CodeEditor })));
+const TranslatePanel = lazy(() => import('./components/TranslatePanel').then((module) => ({ default: module.TranslatePanel })));
+
 function MainApp() {
-  const { sidebarOpen, settings } = useStore();
+  const { sidebarOpen, settings, terminalOpen } = useStore();
+  const openTabs = useStore((state) => state.openTabs);
   useTheme(); // 初始化主题
 
   const [sidebarWidth, setSidebarWidth] = useState(240);
   const [isResizing, setIsResizing] = useState(false);
+  const [terminalLoaded, setTerminalLoaded] = useState(terminalOpen);
   const resizeStartX = useRef(0);
   const resizeStartWidth = useRef(0);
+
+  useEffect(() => {
+    if (terminalOpen) setTerminalLoaded(true);
+  }, [terminalOpen]);
+
+  useEffect(() => {
+    window.electronAPI?.setDirty(openTabs.some((tab) => tab.modified));
+  }, [openTabs]);
 
   const handleResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -54,7 +66,7 @@ function MainApp() {
   useEffect(() => {
     if (!window.electronAPI) return;
 
-    window.electronAPI.onMenuAction((event: any, action: string) => {
+    return window.electronAPI.onMenuAction((action: string) => {
       switch (action) {
         case 'menu-open-folder':
           // 触发打开文件夹
@@ -63,7 +75,7 @@ function MainApp() {
         case 'menu-new-file':
           useStore.getState().openNewFileDialog();
           break;
-        case 'menu-save':
+        case 'menu-save': {
           const { activeFilePath, fileContents, workspacePath } = useStore.getState();
           if (activeFilePath && workspacePath && window.electronAPI) {
             const content = fileContents[activeFilePath];
@@ -74,9 +86,32 @@ function MainApp() {
             });
           }
           break;
+        }
       }
     });
+  }, []);
 
+  // 将旧版明文密钥迁移到 Electron safeStorage，并仅在当前会话保留解密值。
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    let cancelled = false;
+    const migrate = async () => {
+      const state = useStore.getState();
+      const legacyKey = state.settings.apiKey || localStorage.getItem('decipher-api-key') || '';
+      if (legacyKey) {
+        const result = await window.electronAPI!.secrets.saveApiKey(legacyKey);
+        localStorage.removeItem('decipher-api-key');
+        state.updateSettings({ apiKey: legacyKey });
+        if (!result.success) console.warn(result.error);
+        return;
+      }
+      const result = await window.electronAPI!.secrets.loadApiKey();
+      if (!cancelled && result.success && result.apiKey) {
+        useStore.getState().updateSettings({ apiKey: result.apiKey });
+      }
+    };
+    void migrate();
+    return () => { cancelled = true; };
   }, []);
 
   // 键盘快捷键
@@ -94,7 +129,7 @@ function MainApp() {
             e.preventDefault();
             (document.querySelector('[title="打开文件夹"]') as HTMLElement)?.click();
             break;
-          case 's':
+          case 's': {
             e.preventDefault();
             const { activeFilePath, fileContents, workspacePath, markModified } = useStore.getState();
             if (activeFilePath && workspacePath && window.electronAPI) {
@@ -106,17 +141,31 @@ function MainApp() {
               });
             }
             break;
-          case 'w':
+          }
+          case 'w': {
             if (useStore.getState().activeFilePath) {
               e.preventDefault();
-              useStore.getState().closeTab(useStore.getState().activeFilePath!);
+              const state = useStore.getState();
+              const tab = state.openTabs.find((item) => item.path === state.activeFilePath);
+              if (!tab?.modified || window.confirm('该文件有未保存的修改，确定关闭吗？')) {
+                state.closeTab(state.activeFilePath!);
+              }
             }
+            break;
+          }
+          case '`':
+            e.preventDefault();
+            useStore.getState().toggleTerminal();
             break;
           case 'c':
             if (e.shiftKey && window.electronAPI) {
               e.preventDefault();
               window.electronAPI.toggleCanvasWindow();
             }
+            break;
+          case 'f5':
+            e.preventDefault();
+            useStore.getState().requestRun();
             break;
         }
       }
@@ -165,11 +214,16 @@ function MainApp() {
         <main className="flex-1 overflow-hidden min-w-[200px] flex flex-col">
           <TabBar />
           <div className="flex-1 overflow-hidden">
-            <CodeEditor />
+            <Suspense fallback={null}><CodeEditor /></Suspense>
           </div>
+          {terminalLoaded && (
+            <Suspense fallback={null}>
+              <TerminalPanel />
+            </Suspense>
+          )}
         </main>
         
-        <TranslatePanel />
+        <Suspense fallback={null}><TranslatePanel /></Suspense>
       </div>
       
       <div className="relative z-10">
@@ -186,7 +240,7 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/canvas" element={<CanvasPage />} />
+        <Route path="/canvas" element={<Suspense fallback={null}><CanvasPage /></Suspense>} />
         <Route path="/*" element={<MainApp />} />
       </Routes>
     </HashRouter>

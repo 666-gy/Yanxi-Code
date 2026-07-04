@@ -31,7 +31,9 @@ export function TabBar() {
               }`}
               onClick={(e) => {
                 e.stopPropagation();
-                closeTab(tab.path);
+                if (!tab.modified || window.confirm('该文件有未保存的修改，确定关闭吗？')) {
+                  closeTab(tab.path);
+                }
               }}
             >
               <X size={14} />

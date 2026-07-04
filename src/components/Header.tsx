@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, PanelLeftClose, PanelLeftOpen, Sparkles, FolderOpen, FilePlus, ToggleLeft, ToggleRight, RefreshCw, X } from 'lucide-react';
+import { Settings, PanelLeftClose, PanelLeftOpen, FolderOpen, FilePlus, ToggleLeft, ToggleRight, X, Play, TerminalSquare } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import logoUrl from '/logo.svg';
 
@@ -14,6 +14,8 @@ export function Header() {
     setTranslateEnabled,
     workspacePath,
     openNewFileDialog,
+    toggleTerminal,
+    requestRun,
   } = useStore();
 
   const [isElectron, setIsElectron] = useState(false);
@@ -27,7 +29,13 @@ export function Header() {
     if (!window.electronAPI) return;
     
     if (workspacePath) {
-      window.electronAPI.watchWorkspace(workspacePath);
+      void window.electronAPI.watchWorkspace(workspacePath).catch(() => false);
+      void window.electronAPI.readDirectory(workspacePath).then((files) => {
+        useStore.getState().setFiles(files);
+        useStore.getState().setWorkspaceName(workspacePath.split(/[/\\]/).pop() || workspacePath);
+      }).catch(() => {
+        useStore.getState().openFolder('', '未打开工作区');
+      });
     } else {
       window.electronAPI.unwatchWorkspace();
     }
@@ -43,7 +51,7 @@ export function Header() {
   useEffect(() => {
     if (!window.electronAPI) return;
 
-    const handleChange = async (event: any, data: { type: string; filename: string; timestamp: number }) => {
+    const handleChange = async () => {
       const { workspacePath: currentPath, setFiles } = useStore.getState();
       if (!currentPath) return;
       
@@ -56,7 +64,7 @@ export function Header() {
       }
     };
 
-    window.electronAPI.onWorkspaceChanged(handleChange);
+    return window.electronAPI.onWorkspaceChanged(handleChange);
   }, []);
 
   const statusColors: Record<string, string> = {
@@ -89,7 +97,9 @@ export function Header() {
 
   const handleCloseWorkspace = async () => {
     if (!window.electronAPI) return;
-    await window.electronAPI.unwatchWorkspace();
+    const hasModified = useStore.getState().openTabs.some((tab) => tab.modified);
+    if (hasModified && !window.confirm('工作区中有未保存的文件，确定关闭吗？')) return;
+    await window.electronAPI.closeWorkspace();
     useStore.getState().openFolder('', '未打开工作区');
   };
 
@@ -152,6 +162,24 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
+        {isElectron && workspacePath && (
+          <>
+            <button
+              onClick={requestRun}
+              className="p-1.5 rounded-md hover:bg-cyber-800 text-scholar-muted hover:text-amber-400"
+              title="运行当前文件 (Ctrl+F5)"
+            >
+              <Play size={17} />
+            </button>
+            <button
+              onClick={toggleTerminal}
+              className="p-1.5 rounded-md hover:bg-cyber-800 text-scholar-muted hover:text-amber-400"
+              title="切换终端 (Ctrl+`)"
+            >
+              <TerminalSquare size={17} />
+            </button>
+          </>
+        )}
         {/* Yan Board 药丸按钮 */}
         {isElectron && (
           <button

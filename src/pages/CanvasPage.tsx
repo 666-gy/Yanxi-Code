@@ -230,7 +230,7 @@ export function CanvasPage() {
   };
 
   /* ── 读取 API 配置 ── */
-  const getApiConfig = () => {
+  const getApiConfig = async () => {
     let apiKey = '', apiBase = 'https://api.deepseek.com', model = 'deepseek-v4-flash';
     const saved = localStorage.getItem('decipher-storage');
     if (saved) {
@@ -241,7 +241,10 @@ export function CanvasPage() {
         model = parsed.state?.settings?.model || model;
       } catch {}
     }
-    if (!apiKey) apiKey = localStorage.getItem('decipher-api-key') || '';
+    if (!apiKey && window.electronAPI) {
+      const secret = await window.electronAPI.secrets.loadApiKey();
+      if (secret.success) apiKey = secret.apiKey;
+    }
     const fb = localStorage.getItem('decipher-api-base');
     if (fb) apiBase = fb;
     const fbModel = localStorage.getItem('decipher-model');
@@ -329,7 +332,7 @@ export function CanvasPage() {
 
   /* ── AI 模块化分析 ── */
   const generateModules = async (code: string): Promise<ModuleData[]> => {
-    const { apiKey, apiBase, model } = getApiConfig();
+    const { apiKey, apiBase, model } = await getApiConfig();
 
     if (!apiKey) return fallbackParse(code);
 
@@ -460,7 +463,7 @@ ${code.slice(0, 8000)}
 
   /* ── AI 深入解析（聚焦态第二层） ── */
   const fetchDetail = async (mod: ModuleData) => {
-    const { apiKey, apiBase, model } = getApiConfig();
+    const { apiKey, apiBase, model } = await getApiConfig();
     if (!apiKey) {
       setFocusDetail({
         explanation: '请先配置 API Key 以获取 AI 深入解析。',
