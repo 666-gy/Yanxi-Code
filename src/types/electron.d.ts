@@ -18,6 +18,8 @@ interface ElectronAPI {
   onFromMainWindow: (callback: (event: any, data: any) => void) => void;
 
   checkUpdate: () => Promise<UpdateResult>;
+
+  openExternal: (url: string) => Promise<boolean>;
 }
 
 interface UpdateResult {

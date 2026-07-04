@@ -487,21 +487,35 @@
   <div class="section-inner" style="text-align:center;">
     <div class="section-label" style="color:rgba(255,255,255,0.5);">下载</div>
     <h2 class="section-title" style="color:#fff;">选择适合你的版本</h2>
-    <p class="section-desc" style="color:rgba(255,255,255,0.5);">Windows 64 位，v1.2.8 · 开源免费，MIT 协议</p>
+    <p class="section-desc" style="color:rgba(255,255,255,0.5);">Windows / Linux 64 位，v1.2.9 · 开源免费，MIT 协议</p>
     <div class="download-grid">
-      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.2.8/Yanxi.Setup.1.2.8.exe" class="download-card">
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.2.9/Yanxi.Setup.1.2.9.exe" class="download-card">
         <div class="platform">推荐</div>
         <h3>安装版<span class="tag" style="margin-left:10px;">Setup</span></h3>
         <p class="desc">标准安装程序，支持自定义路径、桌面快捷方式和开始菜单。一步到位，即刻使用。<strong>支持自动更新提醒。</strong></p>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Setup 1.2.8.exe</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Setup 1.2.9.exe</div>
         <div class="filesize">≈ 114 MB</div>
       </a>
-      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.2.8/Yanxi-Portable-1.2.8.exe" class="download-card">
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.2.9/Yanxi-Portable-1.2.9.exe" class="download-card">
         <div class="platform">免安装</div>
         <h3>便携版<span class="tag" style="margin-left:10px;">Portable</span></h3>
         <p class="desc">解压即用，无需安装。适合放在 U 盘随身携带，不写注册表，干净轻量。</p>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Portable 1.2.8.exe</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi Portable 1.2.9.exe</div>
         <div class="filesize">≈ 114 MB</div>
+      </a>
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.2.9/Yanxi-1.2.9.AppImage" class="download-card">
+        <div class="platform">Linux</div>
+        <h3>AppImage<span class="tag" style="margin-left:10px;">Linux</span></h3>
+        <p class="desc">下载后添加执行权限即可运行，无需安装。适配大多数 Linux 发行版，开箱即用。</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">Yanxi-1.2.9.AppImage</div>
+        <div class="filesize">≈ 90 MB</div>
+      </a>
+      <a href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.2.9/yanxi_1.2.9_amd64.deb" class="download-card">
+        <div class="platform">Linux</div>
+        <h3>deb 包<span class="tag" style="margin-left:10px;">Debian/Ubuntu</span></h3>
+        <p class="desc">适用于 Debian/Ubuntu 系发行版，dpkg 一键安装，自动创建桌面快捷方式。</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.9rem;opacity:0.7;">yanxi_1.2.9_amd64.deb</div>
+        <div class="filesize">≈ 90 MB</div>
       </a>
     </div>
     <div class="download-cloud">
@@ -554,10 +568,10 @@
       </div>
       <div class="feature-card reveal">
         <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
         </div>
-        <h3>Agent 助手</h3>
-        <p>内置 AI Agent，支持读写、增删改查文件操作，像对话一样管理你的代码。</p>
+        <h3>自定义背景</h3>
+        <p>支持上传自定义背景图片，自由调节透明度。打造专属编码空间，学习也能赏心悦目。</p>
       </div>
       <div class="feature-card reveal">
         <div class="feature-icon">
@@ -588,7 +602,26 @@
 <section id="changelog" style="background: var(--card-bg); border-top:1px solid var(--border);">
   <div class="section-inner">
     <div class="section-label">更新公告</div>
-    <h2 class="section-title">v1.2.8 更新内容</h2>
+    <h2 class="section-title">v1.2.9 更新内容</h2>
+    <p class="section-desc">2026 年 7 月 4 日发布，自定义背景图像 + Linux 版本支持</p>
+    <div class="changelog-list">
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>自定义背景图像 + 透明度调整</h4>
+          <p>设置面板新增"外观设置"选项卡，支持上传自定义背景图片，并可自由调节背景透明度（0%–100%）。打造专属编码空间，让学习环境更加个性化。</p>
+        </div>
+      </div>
+      <div class="changelog-item reveal">
+        <div class="changelog-dot"></div>
+        <div class="changelog-body">
+          <h4>支持 Linux 版本</h4>
+          <p>全新适配 Linux 平台，提供 AppImage 和 deb 两种安装格式。AppImage 下载即用，deb 包支持 Debian/Ubuntu 系发行版一键安装。Windows/Linux 双平台同步发布。</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top:3rem;">v1.2.8 更新内容</h2>
     <p class="section-desc">2026 年 7 月 2 日发布，DeepSeek V4 模型迁移 + 代码补全优化 + API 计费统计</p>
     <div class="changelog-list">
       <div class="changelog-item reveal">
@@ -778,7 +811,6 @@
           <tr><td>Ctrl + N</td><td>新建文件</td></tr>
           <tr><td>Ctrl + O</td><td>打开文件夹</td></tr>
           <tr><td>Ctrl + S</td><td>保存文件</td></tr>
-          <tr><td>Ctrl + Shift + A</td><td>打开 Agent 助手</td></tr>
           <tr><td>Ctrl + B</td><td>切换侧边栏</td></tr>
         </table>
       </div>

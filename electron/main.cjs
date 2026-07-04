@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, Tray } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, Tray, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -54,6 +54,16 @@ function createWindow() {
     }
   });
 }
+
+// 打开外部链接（默认浏览器）
+ipcMain.handle('open-external', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+    return true;
+  } catch {
+    return false;
+  }
+});
 
 // 文件操作 IPC
 ipcMain.handle('open-folder', async (event) => {
@@ -457,7 +467,7 @@ ipcMain.handle('send-to-canvas', async (event, data) => {
 // ═══════════════════════════════════════
 // 检查更新
 // ═══════════════════════════════════════
-const UPDATE_CHECK_URL = 'https://yanxicode.jhhcn.icu/version.json';
+const UPDATE_CHECK_URL = 'https://666-gy.github.io/Yanxi-Code/website/version.json';
 const UPDATE_UA = `YanxiCode/${app.getVersion()} (${process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux'}; ${process.arch})`;
 
 function compareVersions(a, b) {
@@ -501,7 +511,7 @@ ipcMain.handle('check-update', async () => {
                 success: true, hasUpdate,
                 currentVersion: current,
                 latestVersion: remote.version,
-                downloadUrl: remote.url || 'https://yanxicode.jhhcn.icu/download',
+                downloadUrl: remote.url || 'https://666-gy.github.io/Yanxi-Code/website/index.html#download',
                 notes: remote.notes || '',
               });
             } catch (e) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  X, Zap, Clock, Palette, Save, Image, Trash2, BarChart3, RefreshCw, Key, Cpu, Languages, Monitor,
+  X, Zap, Clock, Palette, Save, Image, Trash2, BarChart3, RefreshCw, Key, Cpu, Languages, Monitor, Globe,
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { loadApiUsage, resetApiUsage } from '../utils/apiUsage';
@@ -77,6 +77,20 @@ export function SettingsModal() {
                 </button>
               );
             })}
+          </div>
+          {/* 官网链接 */}
+          <div className="px-4 py-3 border-t border-cyber-700/50 mt-auto">
+            <button
+              onClick={() => {
+                if (window.electronAPI?.openExternal) {
+                  window.electronAPI.openExternal('https://666-gy.github.io/Yanxi-Code/website/index.html');
+                }
+              }}
+              className="w-full flex items-center gap-2 text-[11px] text-scholar-subtle hover:text-amber-400 transition-colors"
+            >
+              <Globe size={13} />
+              官方网站
+            </button>
           </div>
         </div>
 
