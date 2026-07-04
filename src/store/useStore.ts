@@ -76,14 +76,14 @@ interface AppState {
 
 const defaultSettings: AppSettings = {
   apiKey: '',
-  model: 'deepseek-chat',
+  model: 'deepseek-v4-flash',
   apiBase: 'https://api.deepseek.com',
   debounceMs: 500,
   autoTranslate: true,
-  theme: 'dark',
+  backgroundImage: null,
+  backgroundOpacity: 0.15,
 };
 
-// 手动从 localStorage 加载 API Key（最稳妥）
 const savedApiKey = localStorage.getItem('decipher-api-key');
 if (savedApiKey) {
   defaultSettings.apiKey = savedApiKey;
@@ -95,10 +95,6 @@ if (savedApiBase) {
 const savedModel = localStorage.getItem('decipher-model');
 if (savedModel) {
   defaultSettings.model = savedModel;
-}
-const savedTheme = localStorage.getItem('decipher-theme');
-if (savedTheme) {
-  defaultSettings.theme = savedTheme as 'dark' | 'light';
 }
 
 // 空工作区初始状态
@@ -222,7 +218,6 @@ export const useStore = create<AppState>()(
       updateSettings: (partial) => {
         const newSettings = { ...get().settings, ...partial };
         set({ settings: newSettings });
-        // 手动保存到 localStorage（双保险）
         if (partial.apiKey !== undefined) {
           localStorage.setItem('decipher-api-key', partial.apiKey);
         }
@@ -231,9 +226,6 @@ export const useStore = create<AppState>()(
         }
         if (partial.model !== undefined) {
           localStorage.setItem('decipher-model', partial.model);
-        }
-        if (partial.theme !== undefined) {
-          localStorage.setItem('decipher-theme', partial.theme);
         }
       },
       toggleSidebar: () =>

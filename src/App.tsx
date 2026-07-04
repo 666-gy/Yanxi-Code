@@ -8,13 +8,12 @@ import { TranslatePanel } from './components/TranslatePanel';
 import { StatusBar } from './components/StatusBar';
 import { SettingsModal } from './components/SettingsModal';
 import { NewFileDialog } from './components/NewFileDialog';
-import { AgentPage } from './pages/AgentPage';
 import { CanvasPage } from './pages/CanvasPage';
 import { useStore } from './store/useStore';
 import { useTheme } from './hooks/useTheme';
 
 function MainApp() {
-  const { sidebarOpen } = useStore();
+  const { sidebarOpen, settings } = useStore();
   useTheme(); // 初始化主题
 
   const [sidebarWidth, setSidebarWidth] = useState(240);
@@ -77,6 +76,7 @@ function MainApp() {
           break;
       }
     });
+
   }, []);
 
   // 键盘快捷键
@@ -112,12 +112,6 @@ function MainApp() {
               useStore.getState().closeTab(useStore.getState().activeFilePath!);
             }
             break;
-          case 'a':
-            if (e.shiftKey && window.electronAPI) {
-              e.preventDefault();
-              window.electronAPI.toggleAgentWindow();
-            }
-            break;
           case 'c':
             if (e.shiftKey && window.electronAPI) {
               e.preventDefault();
@@ -133,13 +127,25 @@ function MainApp() {
   }, []);
 
   return (
-    <div className="h-full w-full flex flex-col bg-cyber-900 text-scholar-text overflow-hidden">
-      <Header />
+    <div className="h-full w-full flex flex-col bg-cyber-900 text-scholar-text overflow-hidden relative">
+      {/* 背景图 */}
+      {settings.backgroundImage && (
+        <div
+          className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${settings.backgroundImage})`,
+            opacity: settings.backgroundOpacity,
+          }}
+        />
+      )}
+      <div className="relative z-10">
+        <Header />
+      </div>
       
-      <div className="flex-1 flex overflow-hidden min-h-0 relative">
+      <div className="flex-1 flex overflow-hidden min-h-0 relative z-10">
         {sidebarOpen && (
           <aside
-            className="bg-cyber-900 border-r border-cyber-700 shrink-0 overflow-hidden"
+            className="bg-transparent border-r border-cyber-700/30 shrink-0 overflow-hidden"
             style={{ width: `${sidebarWidth}px` }}
           >
             <FileTree />
@@ -166,7 +172,9 @@ function MainApp() {
         <TranslatePanel />
       </div>
       
-      <StatusBar />
+      <div className="relative z-10">
+        <StatusBar />
+      </div>
       
       <SettingsModal />
       <NewFileDialog />
@@ -178,7 +186,6 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/agent" element={<AgentPage />} />
         <Route path="/canvas" element={<CanvasPage />} />
         <Route path="/*" element={<MainApp />} />
       </Routes>

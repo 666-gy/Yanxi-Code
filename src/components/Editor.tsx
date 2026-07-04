@@ -39,6 +39,15 @@ export function CodeEditor() {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
+    const domNode = editor.getDomNode();
+    if (domNode) {
+      domNode.style.backgroundColor = 'transparent';
+      const lines = domNode.querySelectorAll('.monaco-editor-background, .editor-background');
+      lines.forEach((el: any) => {
+        el.style.backgroundColor = 'transparent';
+      });
+    }
+
     editor.onDidChangeCursorPosition((e: any) => {
       setCursorPosition({
         line: e.position.lineNumber,
@@ -139,7 +148,7 @@ export function CodeEditor() {
   // 没有 tab 时的空状态
   if (openTabs.length === 0 || !activeFilePath) {
     return (
-      <div className="h-full flex items-center justify-center bg-cyber-900">
+      <div className="h-full flex items-center justify-center bg-transparent">
         <div className="text-center">
           <img src={logoUrl} alt="Yanxi Code" className="w-24 h-24 mx-auto mb-6" />
           <p className="text-scholar-muted text-xl italic">所想即所写，所写即所现。</p>
@@ -150,7 +159,7 @@ export function CodeEditor() {
 
   return (
     <div className="h-full w-full">
-      <div className="h-8 bg-cyber-950 border-b border-cyber-700 flex items-center px-4">
+      <div className="h-8 bg-transparent border-b border-cyber-700/30 flex items-center px-4">
         <span className="text-sm text-scholar-text">{activeTab?.name}</span>
         {activeTab?.modified && (
           <span className="ml-2 text-xs text-amber-400">● 已修改</span>
@@ -167,7 +176,7 @@ export function CodeEditor() {
           </button>
         )}
       </div>
-      <div className="h-[calc(100%-2rem)] overflow-auto bg-cyber-900">
+      <div className="h-[calc(100%-2rem)] overflow-auto bg-transparent">
         {mdPreview && language === 'markdown' ? (
           <div 
             className="min-h-full p-8 cursor-default"
@@ -211,7 +220,6 @@ export function CodeEditor() {
           </div>
         ) : (
           <Editor
-            key={monacoTheme}
             height="100%"
             language={monacoLang}
             value={currentContent}

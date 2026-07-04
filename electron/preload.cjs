@@ -10,11 +10,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   watchWorkspace: (dirPath) => ipcRenderer.invoke('watch-workspace', dirPath),
   unwatchWorkspace: () => ipcRenderer.invoke('unwatch-workspace'),
   
-  toggleAgentWindow: () => ipcRenderer.invoke('toggle-agent-window'),
-  sendToAgent: (data) => ipcRenderer.invoke('send-to-agent', data),
-  sendToMain: (data) => ipcRenderer.invoke('send-to-main', data),
-  
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
+  selectBackgroundImage: () => ipcRenderer.invoke('select-background-image'),
   toggleCanvasWindow: () => ipcRenderer.invoke('toggle-canvas-window'),
   sendToCanvas: (data) => ipcRenderer.invoke('send-to-canvas', data),
   
@@ -30,10 +27,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   onFromMainWindow: (callback) => {
     ipcRenderer.on('from-main-window', callback);
-  },
-  
-  onFromAgent: (callback) => {
-    ipcRenderer.on('from-agent', callback);
   },
 
   checkUpdate: () => ipcRenderer.invoke('check-update'),

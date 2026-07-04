@@ -6,37 +6,37 @@
 
 /* ========== 主题变量 ========== */
 
-/* 暗色主题（默认） */
+/* 暗色主题（默认） - 现代黑 */
 :root,
 :root.dark {
-  /* Cyber 颜色阶梯 */
-  --cyber-950: #0a0f1a;
-  --cyber-900: #0f172a;
-  --cyber-800: #1e293b;
-  --cyber-700: #334155;
-  --cyber-600: #475569;
+  /* Modern Black 颜色阶梯 - 现代黑 */
+  --cyber-950: #0d0d12;
+  --cyber-900: #14141b;
+  --cyber-800: #1e1e27;
+  --cyber-700: #2a2a35;
+  --cyber-600: #3a3a47;
 
   /* 文本颜色 */
-  --text-primary: #e2e8f0;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
+  --text-primary: #e8e8ed;
+  --text-secondary: #c8c8d0;
+  --text-muted: #9898a8;
+  --text-subtle: #6b6b7a;
 
   /* 强调色 */
   --accent: #f59e0b;
   --accent-hover: #fbbf24;
-  --accent-muted: rgba(245, 158, 11, 0.2);
+  --accent-muted: rgba(245, 158, 11, 0.15);
 
   /* 状态色 */
   --status-success: #2dd4bf;
   --status-error: #ef4444;
 
   /* 滚动条 */
-  --scrollbar-track: #0f172a;
-  --scrollbar-thumb: #334155;
+  --scrollbar-track: #14141b;
+  --scrollbar-thumb: #2a2a35;
 
   /* Monaco 编辑器 */
-  --monaco-bg: #0f172a;
+  --monaco-bg: #14141b;
 }
 
 /* 浅色主题 */
@@ -263,13 +263,29 @@ body {
   animation: shimmer 2s ease-in-out infinite;
 }
 
-/* Monaco 编辑器覆盖 */
+/* Monaco 编辑器覆盖 - 透明背景 */
+.monaco-editor {
+  background-color: transparent !important;
+}
+
+.monaco-editor .monaco-editor-background {
+  background-color: transparent !important;
+}
+
+.monaco-editor .editor-background {
+  background-color: transparent !important;
+}
+
 .monaco-editor .margin {
-  background-color: var(--monaco-bg) !important;
+  background-color: transparent !important;
 }
 
 .monaco-editor .glyph-margin {
-  background-color: var(--monaco-bg) !important;
+  background-color: transparent !important;
+}
+
+.monaco-editor .line-numbers {
+  background-color: transparent !important;
 }
 
 /* 行内翻译动画 */

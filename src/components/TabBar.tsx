@@ -7,7 +7,7 @@ export function TabBar() {
   if (openTabs.length === 0) return null;
 
   return (
-    <div className="h-9 bg-cyber-950 border-b border-cyber-700 flex items-center overflow-x-auto shrink-0">
+    <div className="h-9 bg-transparent border-b border-cyber-700/30 flex items-center overflow-x-auto shrink-0">
       {openTabs.map((tab) => {
         const isActive = activeFilePath === tab.path;
         return (

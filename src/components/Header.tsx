@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, PanelLeftClose, PanelLeftOpen, Sparkles, FolderOpen, FilePlus, ToggleLeft, ToggleRight, RefreshCw, X, Bot } from 'lucide-react';
+import { Settings, PanelLeftClose, PanelLeftOpen, Sparkles, FolderOpen, FilePlus, ToggleLeft, ToggleRight, RefreshCw, X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import logoUrl from '/logo.svg';
 
@@ -94,7 +94,7 @@ export function Header() {
   };
 
   return (
-    <header className="h-12 bg-cyber-950 border-b border-cyber-700 flex items-center justify-between px-3 shrink-0">
+    <header className="h-12 bg-transparent border-b border-cyber-700/30 flex items-center justify-between px-3 shrink-0">
       <div className="flex items-center gap-2 min-w-0">
         <button
           onClick={toggleSidebar}
@@ -171,25 +171,6 @@ export function Header() {
                 <circle cx="13" cy="13" r="3" fill="currentColor" opacity="0.18" />
               </svg>
               <span className="text-xs font-semibold text-cyber-950">Yan Board</span>
-            </div>
-          </button>
-        )}
-
-        {/* Agent 药丸按钮 */}
-        {isElectron && (
-          <button
-            onClick={() => window.electronAPI?.toggleAgentWindow()}
-            className="relative flex items-center gap-1.5 px-3 py-1 rounded-full overflow-hidden group hover:shadow-lg hover:shadow-amber-500/20 transition-all duration-300"
-            title="打开 Agent (Ctrl+Shift+A)"
-          >
-            {/* 流动画背景 */}
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500" />
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 animate-flow" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
-            
-            <div className="relative flex items-center gap-1.5">
-              <Bot size={14} className="text-cyber-950" />
-              <span className="text-xs font-semibold text-cyber-950">Agent</span>
             </div>
           </button>
         )}

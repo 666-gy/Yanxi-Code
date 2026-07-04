@@ -7,7 +7,7 @@ export function StatusBar() {
   const language = activeTab?.language || '';
 
   return (
-    <footer className="h-6 bg-cyber-950 border-t border-cyber-700 flex items-center justify-between px-4 shrink-0 text-[11px]">
+    <footer className="h-6 bg-transparent border-t border-cyber-700/30 flex items-center justify-between px-4 shrink-0 text-[11px]">
       <div className="flex items-center gap-4">
         {workspacePath && (
           <span className="text-scholar-subtle">

@@ -8,17 +8,14 @@ interface ElectronAPI {
   watchWorkspace: (dirPath: string) => Promise<boolean>;
   unwatchWorkspace: () => Promise<boolean>;
   
-  toggleAgentWindow: () => Promise<boolean>;
-  sendToAgent: (data: any) => Promise<boolean>;
-  sendToMain: (data: any) => Promise<boolean>;
   toggleCanvasWindow: () => Promise<boolean>;
   sendToCanvas: (data: any) => Promise<boolean>;
   openFileDialog: () => Promise<string | null>;
+  selectBackgroundImage: () => Promise<string | null>;
   
   onMenuAction: (callback: (event: any, action: string) => void) => void;
   onWorkspaceChanged: (callback: (event: any, data: { type: string; filename: string; timestamp: number }) => void) => void;
   onFromMainWindow: (callback: (event: any, data: any) => void) => void;
-  onFromAgent: (callback: (event: any, data: any) => void) => void;
 
   checkUpdate: () => Promise<UpdateResult>;
 }

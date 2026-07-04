@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useStore } from '../store/useStore';
+import { addApiUsage } from '../utils/apiUsage';
 
 const SYSTEM_PROMPT = `你是一位编程助手。请用中文，用一句话简洁地解释用户给出的代码行在做什么。
 
@@ -81,6 +82,7 @@ export function useDeepSeek() {
       }
 
       let buffer = '';
+      let fullContent = '';
 
       while (true) {
         const { done, value } = await reader.read();
@@ -102,12 +104,18 @@ export function useDeepSeek() {
             const content = data.choices?.[0]?.delta?.content;
             if (content) {
               appendTranslation(content);
+              fullContent += content;
             }
           } catch {
             // 忽略解析错误
           }
         }
       }
+
+      // 记录 API 用量
+      const promptTokens = Math.ceil((systemPrompt.length + userPrompt.length) / 4);
+      const completionTokens = Math.ceil(fullContent.length / 4);
+      addApiUsage(settings.model, mode === 'deep' ? '深度翻译' : '逐行翻译', promptTokens, completionTokens);
 
       setAIStatus('idle');
     } catch (err: any) {

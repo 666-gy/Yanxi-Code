@@ -101,7 +101,7 @@ export function TranslatePanel() {
   return (
     <>
       {!translatePanelOpen ? (
-      <div className="w-10 bg-cyber-800 border-l border-cyber-700 flex flex-col items-center py-4 shrink-0">
+      <div className="w-10 bg-transparent border-l border-cyber-700/30 flex flex-col items-center py-4 shrink-0">
         <button
           onClick={toggleTranslatePanel}
           className="p-2 rounded-lg hover:bg-cyber-700 transition-colors text-amber-400"
@@ -131,7 +131,7 @@ export function TranslatePanel() {
         </button>
       </div>
       ) : (
-    <aside className="w-96 min-w-[300px] bg-cyber-800 border-l border-cyber-700 flex flex-col">
+    <aside className="w-96 min-w-[300px] bg-transparent border-l border-cyber-700/30 flex flex-col">
       <div className="h-12 border-b border-cyber-700 flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">

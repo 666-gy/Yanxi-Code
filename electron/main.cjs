@@ -3,11 +3,12 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 
-// 设置AppUserModelId，确保Windows任务栏图标正确显示
-app.setAppUserModelId('com.yanxi.code');
+// 设置AppUserModelId，确保Windows任务栏图标正确显示（仅 Windows）
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.yanxi.code');
+}
 
 let mainWindow;
-let agentWindow = null;
 let canvasWindow = null;
 let currentWatcher = null;
 let watchTimer = null;
@@ -26,7 +27,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    backgroundColor: '#0f172a',
+    backgroundColor: '#14141b',
     frame: true,
   });
 
@@ -46,14 +47,18 @@ function createWindow() {
   });
 
   mainWindow.on('close', (e) => {
-    e.preventDefault();
-    mainWindow.hide();
+    // 有托盘时隐藏到托盘，无托盘时直接退出
+    if (tray) {
+      e.preventDefault();
+      mainWindow.hide();
+    }
   });
 }
 
 // 文件操作 IPC
-ipcMain.handle('open-folder', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
+ipcMain.handle('open-folder', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win || mainWindow, {
     properties: ['openDirectory'],
   });
   if (result.canceled) return null;
@@ -219,12 +224,28 @@ const menuTemplate = [
           type: 'info',
           title: '关于 Yanxi Code',
           message: 'Yanxi Code - 边写边译 IDE',
-          detail: '一款面向初级开发者的学习型 IDE\n写代码，AI 实时翻译解释\n版本: 1.2.0',
+          detail: '一款面向初级开发者的学习型 IDE\n写代码，AI 实时翻译解释\n版本: 1.2.9',
         });
       }},
     ],
   },
 ];
+
+// 单实例锁 - 只允许一个进程运行
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // 当第二个实例启动时，显示已有窗口
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
@@ -252,46 +273,51 @@ app.on('activate', () => {
 });
 
 function createTray() {
-  const iconPath = path.join(__dirname, '..', 'build', 'icon.png');
-  
-  tray = new Tray(iconPath);
-  
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: '显示窗口',
-      click: () => {
-        if (mainWindow) {
+  try {
+    const iconPath = path.join(__dirname, '..', 'build', 'icon.png');
+    
+    tray = new Tray(iconPath);
+    
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: '显示窗口',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          } else {
+            createWindow();
+          }
+        }
+      },
+      { type: 'separator' },
+      {
+        label: '退出',
+        click: () => {
+          app.exit();
+        }
+      },
+    ]);
+    
+    tray.setToolTip('Yanxi Code');
+    tray.setContextMenu(contextMenu);
+    
+    tray.on('click', () => {
+      if (mainWindow) {
+        if (mainWindow.isVisible()) {
+          mainWindow.hide();
+        } else {
           mainWindow.show();
           mainWindow.focus();
-        } else {
-          createWindow();
         }
-      }
-    },
-    { type: 'separator' },
-    {
-      label: '退出',
-      click: () => {
-        app.exit();
-      }
-    },
-  ]);
-  
-  tray.setToolTip('Yanxi Code');
-  tray.setContextMenu(contextMenu);
-  
-  tray.on('click', () => {
-    if (mainWindow) {
-      if (mainWindow.isVisible()) {
-        mainWindow.hide();
       } else {
-        mainWindow.show();
-        mainWindow.focus();
+        createWindow();
       }
-    } else {
-      createWindow();
-    }
-  });
+    });
+  } catch {
+    // Tray 创建失败（部分 Linux DE 不支持），应用仍可正常运行
+    tray = null;
+  }
 }
 
 // 打开文件选择对话框
@@ -308,6 +334,39 @@ ipcMain.handle('open-file-dialog', async (event) => {
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];
+});
+
+// 选择背景图片并返回 base64
+ipcMain.handle('select-background-image', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win || mainWindow, {
+    title: '选择背景图片',
+    defaultPath: app.getPath('pictures'),
+    filters: [
+      { name: '图片文件', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'] },
+      { name: '所有文件', extensions: ['*'] },
+    ],
+    properties: ['openFile'],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  try {
+    const imagePath = result.filePaths[0];
+    const ext = path.extname(imagePath).slice(1).toLowerCase();
+    const mimeTypeMap = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      bmp: 'image/bmp',
+    };
+    const mimeType = mimeTypeMap[ext] || 'image/png';
+    const imageBuffer = fs.readFileSync(imagePath);
+    const base64 = imageBuffer.toString('base64');
+    return `data:${mimeType};base64,${base64}`;
+  } catch {
+    return null;
+  }
 });
 
 // 画布窗口
@@ -342,7 +401,7 @@ function createCanvasWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    backgroundColor: '#0f172a',
+    backgroundColor: '#14141b',
   });
 
   const isDev = process.argv.includes('--dev');
@@ -394,95 +453,12 @@ ipcMain.handle('send-to-canvas', async (event, data) => {
   return false;
 });
 
-// Agent 窗口
-function createAgentWindow() {
-  if (agentWindow && !agentWindow.isDestroyed()) {
-    agentWindow.focus();
-    return;
-  }
-
-  const mainBounds = mainWindow.getBounds();
-  
-  // 窗口尺寸略小于主窗口，保持相似比例
-  const width = Math.round(mainBounds.width * 0.85);
-  const height = Math.round(mainBounds.height * 0.85);
-  const x = mainBounds.x + Math.round((mainBounds.width - width) / 2);
-  const y = mainBounds.y + Math.round((mainBounds.height - height) / 2);
-  
-  agentWindow = new BrowserWindow({
-    width: width,
-    height: height,
-    x: x,
-    y: y,
-    minWidth: 600,
-    minHeight: 500,
-    title: 'Yanxi Agent',
-    frame: true,
-    transparent: false,
-    resizable: true,
-    alwaysOnTop: false,
-    skipTaskbar: false,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-    backgroundColor: '#0a0f1a',
-  });
-
-  const isDev = process.argv.includes('--dev');
-  
-  if (isDev) {
-    agentWindow.loadURL('http://localhost:5173/#/agent');
-  } else {
-    agentWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'), {
-      hash: '/agent',
-    });
-  }
-
-  agentWindow.on('closed', () => {
-    agentWindow = null;
-  });
-}
-
-ipcMain.handle('toggle-agent-window', async () => {
-  if (agentWindow && !agentWindow.isDestroyed()) {
-    if (agentWindow.isVisible()) {
-      agentWindow.hide();
-      return false;
-    } else {
-      agentWindow.show();
-      agentWindow.focus();
-      return true;
-    }
-  } else {
-    createAgentWindow();
-    return true;
-  }
-});
-
-// 主窗口 -> Agent 窗口通信
-ipcMain.handle('send-to-agent', async (event, data) => {
-  if (agentWindow && !agentWindow.isDestroyed()) {
-    agentWindow.webContents.send('from-main-window', data);
-    return true;
-  }
-  return false;
-});
-
-// Agent 窗口 -> 主窗口通信
-ipcMain.handle('send-to-main', async (event, data) => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('from-agent', data);
-    return true;
-  }
-  return false;
-});
 
 // ═══════════════════════════════════════
 // 检查更新
 // ═══════════════════════════════════════
 const UPDATE_CHECK_URL = 'https://yanxicode.jhhcn.icu/version.json';
+const UPDATE_UA = `YanxiCode/${app.getVersion()} (${process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux'}; ${process.arch})`;
 
 function compareVersions(a, b) {
   const pa = a.split('.').map(Number);
@@ -499,7 +475,7 @@ ipcMain.handle('check-update', async () => {
     const req = https.get(UPDATE_CHECK_URL, {
       timeout: 10000,
       headers: {
-        'User-Agent': 'YanxiCode/1.0 (Windows NT 10.0; Win64; x64)',
+        'User-Agent': UPDATE_UA,
         'Accept': 'application/json',
       }
     }, (res) => {
@@ -509,7 +485,7 @@ ipcMain.handle('check-update', async () => {
         https.get(redirectUrl, {
           timeout: 10000,
           headers: {
-            'User-Agent': 'YanxiCode/1.0 (Windows NT 10.0; Win64; x64)',
+            'User-Agent': UPDATE_UA,
             'Accept': 'application/json',
           }
         }, (res2) => {

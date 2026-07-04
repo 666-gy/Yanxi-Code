@@ -1,6 +1,6 @@
 {
   "name": "decipher",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Yanxi Code - 边写边译 IDE",
   "main": "electron/main.cjs",
   "author": "Decipher",
@@ -29,6 +29,7 @@
     "react-syntax-highlighter": "^16.1.1",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.0.2",
+    "typebox": "^1.3.3",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
@@ -95,6 +96,21 @@
     },
     "portable": {
       "artifactName": "Yanxi-Portable-${version}.exe"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Development",
+      "icon": "build/icon.png",
+      "artifactName": "Yanxi-${version}.${ext}"
     }
   }
 }

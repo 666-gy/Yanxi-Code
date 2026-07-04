@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Upload, FileCode, X, ZoomIn, ZoomOut, Maximize, Minimize, ArrowLeft, Sparkles, AlertTriangle, Lightbulb, BookOpen, Code2 } from 'lucide-react';
+import { addApiUsage } from '../utils/apiUsage';
 
 /* ──── 类型定义 ──── */
 
@@ -230,7 +231,7 @@ export function CanvasPage() {
 
   /* ── 读取 API 配置 ── */
   const getApiConfig = () => {
-    let apiKey = '', apiBase = 'https://api.deepseek.com', model = 'deepseek-chat';
+    let apiKey = '', apiBase = 'https://api.deepseek.com', model = 'deepseek-v4-flash';
     const saved = localStorage.getItem('decipher-storage');
     if (saved) {
       try {
@@ -377,6 +378,12 @@ ${code.slice(0, 8000)}
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content || '';
+
+      // 记录 API 用量
+      const promptTokens = data.usage?.prompt_tokens || Math.ceil(code.length / 4);
+      const completionTokens = data.usage?.completion_tokens || Math.ceil(content.length / 4);
+      addApiUsage(model, 'Yan Board 分析', promptTokens, completionTokens);
+
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         const rawModules = JSON.parse(jsonMatch[0]);
@@ -499,6 +506,12 @@ ${mod.code}
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content || '';
+
+      // 记录 API 用量
+      const promptTokens = data.usage?.prompt_tokens || Math.ceil(mod.code.length / 4);
+      const completionTokens = data.usage?.completion_tokens || Math.ceil(content.length / 4);
+      addApiUsage(model, 'Yan Board 深入解析', promptTokens, completionTokens);
+
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const detail = JSON.parse(jsonMatch[0]);

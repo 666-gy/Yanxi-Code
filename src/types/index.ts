@@ -18,7 +18,16 @@ export interface AppSettings {
   apiBase: string;
   debounceMs: number;
   autoTranslate: boolean;
-  theme: 'dark' | 'light';
+  backgroundImage: string | null;
+  backgroundOpacity: number;
+}
+
+export interface ApiUsage {
+  totalTokens: number;
+  totalCost: number;
+  modelUsages: Record<string, { tokens: number; cost: number }>;
+  featureUsages: Record<string, { tokens: number; cost: number }>;
+  callCount: number;
 }
 
 export type TranslationMode = 'auto' | 'deep';
