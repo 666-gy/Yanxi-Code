@@ -10,9 +10,7 @@
 [![GitHub downloads](https://img.shields.io/github/downloads/666-gy/Yanxi-Code/total?color=green)](https://github.com/666-gy/Yanxi-Code/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-[官网下载](https://yanxicode.jhhcn.icu) · [更新日志](#更新日志) · [提交 Issue](https://github.com/666-gy/Yanxi-Code/issues)
-
-![Yanxi Code Screenshot](https://yanxicode.jhhcn.icu/preview.png)
+[官网](https://666-gy.github.io/Yanxi-Code/website/index.html) · [更新日志](#更新日志) · [提交 Issue](https://github.com/666-gy/Yanxi-Code/issues)
 
 </div>
 
@@ -29,12 +27,9 @@
 - **流式输出**：翻译结果实时流入右侧面板
 - 支持 `auto`（自动释义）和 `explain`（详细讲解）两种模式
 
-### 🤖 AI Agent 助手
+### 🎨 自定义背景
 
-内置对话式 AI 助手，支持：
-- 读写文件、增删改查
-- 解释代码逻辑、debug、重构建议
-- 基于 DeepSeek V4 系列模型（Flash / Pro 可选）
+设置面板「外观设置」支持上传自定义背景图片，自由调节透明度（0%–100%），打造专属编码空间。
 
 ### 🖼️ Yan Board 画布空间
 
@@ -74,9 +69,9 @@ Monaco Editor 驱动（VS Code 同款），三层补全覆盖 8 种语言：
 - 深色/浅色主题自适应
 - 预览状态下右键即可返回编辑模式
 
-### 🎨 深色 / 浅色主题
+### 🎨 深色主题
 
-支持一键切换，护眼深色模式默认开启，CSS 变量驱动全站主题适配。
+护眼深色模式，CSS 变量驱动全站主题适配，沉浸式编码体验。
 
 ### 🔄 软件内检查更新
 
@@ -90,22 +85,33 @@ Monaco Editor 驱动（VS Code 同款），三层补全覆盖 8 种语言：
 
 ## 📦 安装
 
-### 方式一：GitHub Releases（推荐）
+### 方式一：百度网盘（推荐）
 
-前往 [Releases 页面](https://github.com/666-gy/Yanxi-Code/releases) 下载最新版：
-
-| 版本 | 说明 |
+| 版本 | 下载 |
 |------|------|
-| `Yanxi Setup x.x.x.exe` | 安装版，支持桌面快捷方式、开始菜单、**自动更新提醒** |
-| `Yanxi-Portable-x.x.x.exe` | 便携版，解压即用，适合 U 盘携带 |
+| 安装版（Setup） | [点击下载](https://pan.baidu.com/s/1Nm6sczDw9JFyJewy-VYL-Q?pwd=code) |
+| 便携版（Portable） | [点击下载](https://pan.baidu.com/s/1oS6MKAJQxmGmG1PuDbRFaQ?pwd=code) |
 
-### 方式二：百度网盘
+### 方式二：GitHub Releases
 
-你的网络不支持访问 GitHub？没关系，点击[这里](https://pan.baidu.com/s/1-tqZh2ug9WQem_C8E6x75g?pwd=code)下载[便携版](https://pan.baidu.com/s/1PgSxxaKPORoi35J811ZFBQ?pwd=code)或[安装版](https://pan.baidu.com/s/1-tqZh2ug9WQem_C8E6x75g?pwd=code)。
+前往 [Releases 页面](https://github.com/666-gy/Yanxi-Code/releases) 下载最新版。
 
-### 方式三：官网
+### Linux 用户
 
-访问 [https://yanxicode.jhhcn.icu](https://yanxicode.jhhcn.icu) 获取最新下载链接。
+Linux 版本不提供预编译安装包，请自行克隆仓库构建：
+
+```bash
+git clone https://github.com/666-gy/Yanxi-Code.git
+cd Yanxi-Code
+npm install
+npm run electron:build
+```
+
+产物位于 `release/` 目录，包含 AppImage 和 deb 两种格式。
+
+### 官方网站
+
+访问 [https://666-gy.github.io/Yanxi-Code/website/index.html](https://666-gy.github.io/Yanxi-Code/website/index.html) 获取最新信息。
 
 ---
 
@@ -114,6 +120,7 @@ Monaco Editor 驱动（VS Code 同款），三层补全覆盖 8 种语言：
 ### 环境要求
 
 - Windows 10 / 11（64 位）
+- Linux（自行构建，AppImage / deb）
 - 自行准备 DeepSeek API Key（[点击获取](https://platform.deepseek.com)）
 
 ### 首次使用
@@ -133,7 +140,6 @@ Monaco Editor 驱动（VS Code 同款），三层补全覆盖 8 种语言：
 | `Ctrl + N` | 新建文件 |
 | `Ctrl + O` | 打开文件夹 |
 | `Ctrl + S` | 保存文件 |
-| `Ctrl + Shift + A` | 打开 Agent 助手 |
 | `Ctrl + B` | 切换左侧文件树 |
 | `Ctrl + Shift + T` | 打开译行面板 |
 
@@ -172,19 +178,19 @@ Yanxi-Code/
 │   │   ├── TabBar.tsx         # 多标签页
 │   │   └── NewFileDialog.tsx  # 新建文件对话框
 │   ├── pages/
-│   │   ├── AgentPage.tsx      # AI Agent 对话页
 │   │   └── CanvasPage.tsx     # Yan Board 画布页
 │   ├── hooks/
 │   │   ├── useDeepSeek.ts     # DeepSeek API 调用（流式翻译）
-│   │   ├── useTheme.ts        # 主题切换
 │   │   └── useDebounce.ts     # 防抖 Hook
 │   ├── store/
 │   │   └── useStore.ts        # Zustand 状态管理（持久化）
 │   ├── utils/
 │   │   └── codeExtractor.ts   # 代码提取工具（单行/选中/全文）
+│   ├── theme/
+│   │   └── monacoTheme.ts     # Monaco 编辑器主题
 │   └── main.tsx               # 渲染进程入口
 ├── public/                    # 静态资源（图标、favicon）
-├── website/                   # 官网 HTML（部署到 yanxicode.jhhcn.icu）
+├── website/                   # 官网 HTML（GitHub Pages）
 └── package.json
 ```
 
@@ -210,10 +216,17 @@ npm run electron:build
 
 ## 更新日志
 
+### v1.2.9（2026-07-04）
+
+- 🎨 **自定义背景图像 + 透明度调整**：设置面板新增「外观设置」Tab，支持上传自定义背景图片，0%–100% 透明度自由调节
+- 🐧 **Linux 版本支持**：全新适配 Linux 平台（AppImage + deb），用户可自行克隆仓库构建
+- 🔗 **官网迁移至 GitHub Pages**：原域名服务商故障，官网迁移至 [GitHub Pages](https://666-gy.github.io/Yanxi-Code/website/index.html)
+- 🧹 **移除 Agent 功能**：沉淀研究 Agent 实现，暂时移除对话助手功能
+
 ### v1.2.8（2026-07-02）
 
 - 🚀 **DeepSeek V4 模型迁移**：升级至 V4 Flash / V4 Pro，旧模型自动迁移
-- 💰 **API 累加计费统计**：实时统计 token 消耗，重启不归零，画布/译行/Agent 全部计入
+- 💰 **API 累加计费统计**：实时统计 token 消耗，重启不归零，画布/译行全部计入
 - 🧠 **代码补全优化**：本地 Worker 摆脱 CDN 依赖，新增 Python / Java / C / C++ / C# / Go / Rust 关键词和代码片段补全
 - 📝 **Markdown 预览**：右键 `.md` 文件查看预览，支持完整 Markdown 渲染，深色主题适配
 - 🐛 **修复**：Yan Board 画布横栏关闭文件无效的 bug，横栏关闭保留侧栏历史记录
@@ -238,10 +251,8 @@ npm run electron:build
 
 - 🎉 首次发布
 - AI 实时翻译解释代码（边写边译）
-- AI Agent 对话助手
 - Monaco Editor 代码编辑器
 - 文件树实时监听
-- 深色/浅色主题
 - 系统托盘常驻
 
 ---
