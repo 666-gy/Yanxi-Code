@@ -110,7 +110,9 @@
       ],
       "category": "Development",
       "icon": "build/icon.png",
-      "artifactName": "Yanxi-${version}.${ext}"
+      "artifactName": "Yanxi-${version}.${ext}",
+      "desktopName": "yanxi.desktop",
+      "syncDesktopName": true
     }
   }
 }
