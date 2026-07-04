@@ -3,7 +3,7 @@
   "version": "1.3.0",
   "description": "Yanxi Code - 边写边译 IDE",
   "main": "electron/main.cjs",
-  "author": "Decipher",
+  "author": "Decipher <decipher@yanxi.dev>",
   "license": "MIT",
   "type": "module",
   "scripts": {
