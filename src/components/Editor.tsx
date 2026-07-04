@@ -3,14 +3,16 @@ import Editor from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useStore } from '../store/useStore';
-import { detectLanguage, getMonacoLanguage, extractSingleLine } from '../utils/codeExtractor';
+import { getMonacoLanguage, extractSingleLine } from '../utils/codeExtractor';
 import { useDeepSeek } from '../hooks/useDeepSeek';
 import { useTheme } from '../hooks/useTheme';
 import logoUrl from '/logo.svg';
+import '../monaco';
 
 export function CodeEditor() {
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
+  const translateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mdPreview, setMdPreview] = useState(false);
   const {
     activeFilePath,
@@ -27,6 +29,12 @@ export function CodeEditor() {
   
   const { translate } = useDeepSeek();
   const { monacoTheme } = useTheme();
+  const settingsRef = useRef(settings);
+  const translateEnabledRef = useRef(translateEnabled);
+  const translateRef = useRef(translate);
+  settingsRef.current = settings;
+  translateEnabledRef.current = translateEnabled;
+  translateRef.current = translate;
 
   // 获取当前 tab 的内容
   const activeTab = openTabs.find(t => t.path === activeFilePath);
@@ -56,9 +64,9 @@ export function CodeEditor() {
 
       // 光标换行时触发翻译上一行
       if (
-        settings.autoTranslate &&
-        settings.apiKey &&
-        translateEnabled &&
+        settingsRef.current.autoTranslate &&
+        settingsRef.current.apiKey &&
+        translateEnabledRef.current &&
         e.position.lineNumber !== lastLineRef.current
       ) {
         const prevLine = lastLineRef.current;
@@ -67,7 +75,10 @@ export function CodeEditor() {
         const content = editor.getValue();
         const { content: lineContent } = extractSingleLine(content, prevLine, language);
         if (lineContent.trim()) {
-          translate(lineContent.trim(), language, 'auto');
+          if (translateTimerRef.current) clearTimeout(translateTimerRef.current);
+          translateTimerRef.current = setTimeout(() => {
+            translateRef.current(lineContent.trim(), language, 'auto');
+          }, settingsRef.current.debounceMs);
         }
       }
     });
@@ -129,6 +140,10 @@ export function CodeEditor() {
   useEffect(() => {
     setMdPreview(false);
   }, [activeFilePath]);
+
+  useEffect(() => () => {
+    if (translateTimerRef.current) clearTimeout(translateTimerRef.current);
+  }, []);
 
   // 文件切换时重置行号并触发当前行翻译
   useEffect(() => {

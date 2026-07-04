@@ -35,7 +35,13 @@ export function SettingsModal() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (window.electronAPI) {
+      const result = await window.electronAPI.secrets.saveApiKey(localSettings.apiKey);
+      if (!result.success) {
+        window.alert(result.error || 'API Key 无法安全保存，本次仅在当前会话使用。');
+      }
+    }
     updateSettings(localSettings);
     closeSettings();
   };

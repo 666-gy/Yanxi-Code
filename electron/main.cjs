@@ -1,7 +1,18 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, Tray, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, Tray, shell, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+const {
+  isInside,
+  buildRunPlan,
+  startTerminal,
+  writeTerminal,
+  resizeTerminal,
+  disposeTerminal,
+  disposeSender,
+  disposeAll,
+  executeRun,
+} = require('./terminal.cjs');
 
 // 设置AppUserModelId，确保Windows任务栏图标正确显示（仅 Windows）
 if (process.platform === 'win32') {
@@ -13,6 +24,48 @@ let canvasWindow = null;
 let currentWatcher = null;
 let watchTimer = null;
 let tray = null;
+let workspaceRoot = null;
+let hasUnsavedChanges = false;
+let isQuitting = false;
+const allowedFiles = new Set();
+
+function validateSender(event) {
+  const sender = event.sender;
+  return sender === mainWindow?.webContents || sender === canvasWindow?.webContents;
+}
+
+function requireSender(event) {
+  if (!validateSender(event)) throw new Error('不受信任的 IPC 来源');
+}
+
+function requireWorkspacePath(candidate) {
+  if (!workspaceRoot || !isInside(workspaceRoot, candidate)) {
+    throw new Error('路径不在当前工作区内');
+  }
+  const resolved = path.resolve(candidate);
+  try {
+    return fs.realpathSync.native(resolved);
+  } catch {
+    return resolved;
+  }
+}
+
+function canReadFile(candidate) {
+  const resolved = path.resolve(candidate);
+  return (workspaceRoot && isInside(workspaceRoot, resolved)) || allowedFiles.has(resolved);
+}
+
+function workspaceStatePath() {
+  return path.join(app.getPath('userData'), 'workspace.json');
+}
+
+async function persistWorkspaceRoot() {
+  if (!workspaceRoot) {
+    await fs.promises.rm(workspaceStatePath(), { force: true });
+    return;
+  }
+  await fs.promises.writeFile(workspaceStatePath(), JSON.stringify({ path: workspaceRoot }), 'utf8');
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -30,6 +83,11 @@ function createWindow() {
     backgroundColor: '#14141b',
     frame: true,
   });
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const allowed = url.startsWith('file:') || (isDev && url.startsWith('http://localhost:5173'));
+    if (!allowed) event.preventDefault();
+  });
 
   // 加载 Vite 构建后的文件
   const isDev = process.argv.includes('--dev');
@@ -43,12 +101,13 @@ function createWindow() {
   }
 
   mainWindow.on('closed', () => {
+    disposeSender(mainWindow?.webContents.id);
     mainWindow = null;
   });
 
   mainWindow.on('close', (e) => {
     // 有托盘时隐藏到托盘，无托盘时直接退出
-    if (tray) {
+    if (tray && !isQuitting) {
       e.preventDefault();
       mainWindow.hide();
     }
@@ -57,8 +116,12 @@ function createWindow() {
 
 // 打开外部链接（默认浏览器）
 ipcMain.handle('open-external', async (event, url) => {
+  requireSender(event);
   try {
-    await shell.openExternal(url);
+    const parsed = new URL(url);
+    const allowedHosts = new Set(['666-gy.github.io', 'github.com', 'pan.baidu.com']);
+    if (parsed.protocol !== 'https:' || !allowedHosts.has(parsed.hostname)) return false;
+    await shell.openExternal(parsed.toString());
     return true;
   } catch {
     return false;
@@ -67,45 +130,34 @@ ipcMain.handle('open-external', async (event, url) => {
 
 // 文件操作 IPC
 ipcMain.handle('open-folder', async (event) => {
+  requireSender(event);
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = await dialog.showOpenDialog(win || mainWindow, {
     properties: ['openDirectory'],
   });
   if (result.canceled) return null;
-  return result.filePaths[0];
+  workspaceRoot = fs.realpathSync.native(result.filePaths[0]);
+  allowedFiles.clear();
+  await persistWorkspaceRoot();
+  return workspaceRoot;
 });
 
-function readDirectory(dirPath) {
+async function readDirectory(dirPath) {
   try {
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    const safeDir = requireWorkspacePath(dirPath);
+    const entries = await fs.promises.readdir(safeDir, { withFileTypes: true });
     const items = entries
       .filter(e => !e.name.startsWith('.') && e.name !== 'node_modules')
       .map(e => ({
         name: e.name,
         isDirectory: e.isDirectory(),
-        path: path.join(dirPath, e.name),
+        path: path.join(safeDir, e.name),
       }))
       .sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
         return a.name.localeCompare(b.name);
       });
-    
-    for (const item of items) {
-      if (item.isDirectory) {
-        item.children = readDirectory(item.path);
-      } else {
-        try {
-          const ext = item.name.split('.').pop()?.toLowerCase();
-          if (['py', 'js', 'jsx', 'ts', 'tsx', 'java', 'cpp', 'c', 'html', 'css', 'md', 'txt', 'json'].includes(ext)) {
-            item.content = fs.readFileSync(item.path, 'utf-8');
-          }
-        } catch {
-          item.content = '';
-        }
-      }
-    }
-    
     return items;
   } catch {
     return [];
@@ -113,20 +165,25 @@ function readDirectory(dirPath) {
 }
 
 ipcMain.handle('read-directory', async (event, dirPath) => {
+  requireSender(event);
   return readDirectory(dirPath);
 });
 
 ipcMain.handle('read-file', async (event, filePath) => {
+  requireSender(event);
   try {
-    return fs.readFileSync(filePath, 'utf-8');
+    if (!canReadFile(filePath)) throw new Error('未授权读取该文件');
+    return await fs.promises.readFile(filePath, 'utf-8');
   } catch {
     return null;
   }
 });
 
 ipcMain.handle('save-file', async (event, { filePath, content }) => {
+  requireSender(event);
   try {
-    fs.writeFileSync(filePath, content, 'utf-8');
+    const safePath = requireWorkspacePath(filePath);
+    await fs.promises.writeFile(safePath, content, 'utf-8');
     return true;
   } catch {
     return false;
@@ -134,9 +191,12 @@ ipcMain.handle('save-file', async (event, { filePath, content }) => {
 });
 
 ipcMain.handle('create-file', async (event, { dirPath, fileName, content = '' }) => {
+  requireSender(event);
   try {
-    const filePath = path.join(dirPath, fileName);
-    fs.writeFileSync(filePath, content, 'utf-8');
+    const safeDir = requireWorkspacePath(dirPath);
+    if (!fileName || path.basename(fileName) !== fileName || /[<>:"|?*\0]/.test(fileName)) return null;
+    const filePath = path.join(safeDir, fileName);
+    await fs.promises.writeFile(filePath, content, { encoding: 'utf-8', flag: 'wx' });
     return filePath;
   } catch {
     return null;
@@ -145,6 +205,7 @@ ipcMain.handle('create-file', async (event, { dirPath, fileName, content = '' })
 
 // 文件系统监听
 ipcMain.handle('watch-workspace', async (event, dirPath) => {
+  requireSender(event);
   // 关闭之前的监听
   if (currentWatcher) {
     currentWatcher.close();
@@ -154,7 +215,8 @@ ipcMain.handle('watch-workspace', async (event, dirPath) => {
   if (!dirPath) return false;
 
   try {
-    currentWatcher = fs.watch(dirPath, { recursive: true }, (eventType, filename) => {
+    const safeDir = requireWorkspacePath(dirPath);
+    currentWatcher = fs.watch(safeDir, { recursive: true }, (eventType, filename) => {
       // 防抖：200ms 内多次事件合并
       if (watchTimer) clearTimeout(watchTimer);
       watchTimer = setTimeout(() => {
@@ -181,9 +243,21 @@ ipcMain.handle('unwatch-workspace', async () => {
   return true;
 });
 
+ipcMain.handle('close-workspace', async (event) => {
+  requireSender(event);
+  if (currentWatcher) currentWatcher.close();
+  currentWatcher = null;
+  workspaceRoot = null;
+  allowedFiles.clear();
+  await persistWorkspaceRoot();
+  disposeSender(event.sender.id);
+  return true;
+});
+
 ipcMain.handle('delete-file', async (event, filePath) => {
+  requireSender(event);
   try {
-    fs.unlinkSync(filePath);
+    await fs.promises.unlink(requireWorkspacePath(filePath));
     return true;
   } catch {
     return false;
@@ -258,6 +332,10 @@ if (!gotTheLock) {
 }
 
 app.whenReady().then(() => {
+  try {
+    const saved = JSON.parse(fs.readFileSync(workspaceStatePath(), 'utf8'));
+    if (saved.path && fs.existsSync(saved.path)) workspaceRoot = fs.realpathSync.native(saved.path);
+  } catch {}
   Menu.setApplicationMenu(null);
   createWindow();
   createTray();
@@ -271,6 +349,29 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.hide();
   }
+});
+
+app.on('before-quit', (event) => {
+  if (hasUnsavedChanges) {
+    const options = {
+      type: 'warning',
+      buttons: ['取消', '放弃修改并退出'],
+      defaultId: 0,
+      cancelId: 0,
+      title: '存在未保存的文件',
+      message: '仍有文件尚未保存，确定退出 Yanxi Code 吗？',
+    };
+    const choice = mainWindow
+      ? dialog.showMessageBoxSync(mainWindow, options)
+      : dialog.showMessageBoxSync(options);
+    if (choice === 0) {
+      event.preventDefault();
+      return;
+    }
+    hasUnsavedChanges = false;
+  }
+  isQuitting = true;
+  disposeAll();
 });
 
 app.on('activate', () => {
@@ -304,7 +405,7 @@ function createTray() {
       {
         label: '退出',
         click: () => {
-          app.exit();
+          app.quit();
         }
       },
     ]);
@@ -332,6 +433,7 @@ function createTray() {
 
 // 打开文件选择对话框
 ipcMain.handle('open-file-dialog', async (event) => {
+  requireSender(event);
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = await dialog.showOpenDialog(win || mainWindow, {
     title: '选择要分析的代码文件',
@@ -343,11 +445,14 @@ ipcMain.handle('open-file-dialog', async (event) => {
     properties: ['openFile'],
   });
   if (result.canceled || result.filePaths.length === 0) return null;
-  return result.filePaths[0];
+  const selected = fs.realpathSync.native(result.filePaths[0]);
+  allowedFiles.add(selected);
+  return selected;
 });
 
 // 选择背景图片并返回 base64
 ipcMain.handle('select-background-image', async (event) => {
+  requireSender(event);
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = await dialog.showOpenDialog(win || mainWindow, {
     title: '选择背景图片',
@@ -413,6 +518,7 @@ function createCanvasWindow() {
     },
     backgroundColor: '#14141b',
   });
+  canvasWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
   const isDev = process.argv.includes('--dev');
   
@@ -429,7 +535,8 @@ function createCanvasWindow() {
   });
 }
 
-ipcMain.handle('toggle-canvas-window', async () => {
+ipcMain.handle('toggle-canvas-window', async (event) => {
+  requireSender(event);
   if (canvasWindow && !canvasWindow.isDestroyed()) {
     if (canvasWindow.isVisible()) {
       canvasWindow.hide();
@@ -456,11 +563,88 @@ ipcMain.handle('send-selection-to-canvas', async (event, data) => {
 
 // 主窗口 -> 画布窗口通信
 ipcMain.handle('send-to-canvas', async (event, data) => {
+  requireSender(event);
   if (canvasWindow && !canvasWindow.isDestroyed()) {
     canvasWindow.webContents.send('from-main-window', data);
     return true;
   }
   return false;
+});
+
+// 集成终端与一键运行
+ipcMain.handle('terminal:start', async (event, options = {}) => {
+  requireSender(event);
+  if (!workspaceRoot) throw new Error('请先打开工作区');
+  return startTerminal({ ...options, sender: event.sender, workspaceRoot });
+});
+
+ipcMain.on('terminal:write', (event, { terminalId, data }) => {
+  requireSender(event);
+  writeTerminal(terminalId, data, event.sender.id);
+});
+
+ipcMain.on('terminal:resize', (event, { terminalId, cols, rows }) => {
+  requireSender(event);
+  resizeTerminal(terminalId, cols, rows, event.sender.id);
+});
+
+ipcMain.handle('terminal:dispose', async (event, terminalId) => {
+  requireSender(event);
+  return disposeTerminal(terminalId, event.sender.id);
+});
+
+ipcMain.handle('terminal:prepare-run', async (event, filePath) => {
+  requireSender(event);
+  if (!workspaceRoot) throw new Error('请先打开工作区');
+  return buildRunPlan(requireWorkspacePath(filePath), workspaceRoot);
+});
+
+ipcMain.handle('terminal:execute-run', async (event, { planId, terminalId }) => {
+  requireSender(event);
+  return executeRun(planId, terminalId, event.sender.id);
+});
+
+ipcMain.on('app:set-dirty', (event, dirty) => {
+  requireSender(event);
+  hasUnsavedChanges = Boolean(dirty);
+});
+
+// API Key 静态加密存储。Linux 无可用安全后端时拒绝持久化。
+function apiKeyPath() {
+  return path.join(app.getPath('userData'), 'api-key.bin');
+}
+
+function secureStorageAvailable() {
+  if (!safeStorage.isEncryptionAvailable()) return false;
+  if (process.platform === 'linux' && typeof safeStorage.getSelectedStorageBackend === 'function') {
+    return safeStorage.getSelectedStorageBackend() !== 'basic_text';
+  }
+  return true;
+}
+
+ipcMain.handle('secrets:save-api-key', async (event, apiKey) => {
+  requireSender(event);
+  if (!secureStorageAvailable()) {
+    return { success: false, error: '系统安全存储不可用，API Key 不会持久化' };
+  }
+  const value = String(apiKey || '');
+  if (!value) {
+    await fs.promises.rm(apiKeyPath(), { force: true });
+    return { success: true };
+  }
+  await fs.promises.writeFile(apiKeyPath(), safeStorage.encryptString(value));
+  return { success: true };
+});
+
+ipcMain.handle('secrets:load-api-key', async (event) => {
+  requireSender(event);
+  try {
+    if (!secureStorageAvailable()) return { success: false, apiKey: '' };
+    const encrypted = await fs.promises.readFile(apiKeyPath());
+    return { success: true, apiKey: safeStorage.decryptString(encrypted) };
+  } catch {
+    return { success: true, apiKey: '' };
+  }
 });
 
 
@@ -480,7 +664,8 @@ function compareVersions(a, b) {
   return 0;
 }
 
-ipcMain.handle('check-update', async () => {
+ipcMain.handle('check-update', async (event) => {
+  requireSender(event);
   return new Promise((resolve) => {
     const req = https.get(UPDATE_CHECK_URL, {
       timeout: 10000,
