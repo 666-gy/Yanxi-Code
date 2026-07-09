@@ -21,6 +21,7 @@ if (process.platform === 'win32') {
 
 let mainWindow;
 let canvasWindow = null;
+let agentWindow = null;
 let currentWatcher = null;
 let watchTimer = null;
 let tray = null;
@@ -31,7 +32,11 @@ const allowedFiles = new Set();
 
 function validateSender(event) {
   const sender = event.sender;
-  return sender === mainWindow?.webContents || sender === canvasWindow?.webContents;
+  return (
+    (mainWindow && !mainWindow.isDestroyed() && sender === mainWindow.webContents) ||
+    (canvasWindow && !canvasWindow.isDestroyed() && sender === canvasWindow.webContents) ||
+    (agentWindow && !agentWindow.isDestroyed() && sender === agentWindow.webContents)
+  );
 }
 
 function requireSender(event) {
@@ -83,8 +88,11 @@ function createWindow() {
     backgroundColor: '#14141b',
     frame: true,
   });
-  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  mainWindow.webContents.on('will-navigate', (event, url) => {
+  const mainWebContents = mainWindow.webContents;
+  const mainWebContentsId = mainWebContents.id;
+  mainWebContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWebContents.on('will-navigate', (event, url) => {
+    const isDev = process.argv.includes('--dev');
     const allowed = url.startsWith('file:') || (isDev && url.startsWith('http://localhost:5173'));
     if (!allowed) event.preventDefault();
   });
@@ -101,7 +109,7 @@ function createWindow() {
   }
 
   mainWindow.on('closed', () => {
-    disposeSender(mainWindow?.webContents.id);
+    disposeSender(mainWebContentsId);
     mainWindow = null;
   });
 
@@ -569,6 +577,189 @@ ipcMain.handle('send-to-canvas', async (event, data) => {
     return true;
   }
   return false;
+});
+
+// ═══════════════════════════════════════
+// Agent 窗口
+// ═══════════════════════════════════════
+
+function createAgentWindow() {
+  if (agentWindow && !agentWindow.isDestroyed()) {
+    agentWindow.focus();
+    return;
+  }
+
+  const mainBounds = mainWindow.getBounds();
+  const width = Math.round(mainBounds.width * 0.9);
+  const height = Math.round(mainBounds.height * 0.85);
+  const x = mainBounds.x + Math.round((mainBounds.width - width) / 2);
+  const y = mainBounds.y + Math.round((mainBounds.height - height) / 2);
+
+  agentWindow = new BrowserWindow({
+    width: width,
+    height: height,
+    x: x,
+    y: y,
+    minWidth: 800,
+    minHeight: 550,
+    title: 'Yanxi Agent',
+    frame: true,
+    transparent: false,
+    resizable: true,
+    alwaysOnTop: false,
+    skipTaskbar: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+    backgroundColor: '#14141b',
+  });
+  agentWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+
+  const isDev = process.argv.includes('--dev');
+
+  if (isDev) {
+    agentWindow.loadURL('http://localhost:5173/#/agent');
+  } else {
+    agentWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'), {
+      hash: '/agent',
+    });
+  }
+
+  agentWindow.on('closed', () => {
+    agentWindow = null;
+  });
+}
+
+ipcMain.handle('toggle-agent-window', async (event) => {
+  requireSender(event);
+  if (agentWindow && !agentWindow.isDestroyed()) {
+    if (agentWindow.isVisible()) {
+      agentWindow.hide();
+      return false;
+    } else {
+      agentWindow.show();
+      agentWindow.focus();
+      return true;
+    }
+  } else {
+    createAgentWindow();
+    return true;
+  }
+});
+
+ipcMain.handle('agent:get-workspace', async () => ({
+  workspaceRoot: workspaceRoot || null,
+  workspaceName: workspaceRoot ? path.basename(workspaceRoot) : '',
+}));
+
+ipcMain.handle('agent:select-workspace', async (event) => {
+  requireSender(event);
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win || mainWindow, {
+    title: '选择工作区文件夹',
+    properties: ['openDirectory'],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  const selectedRoot = fs.realpathSync.native(result.filePaths[0]);
+  return { path: selectedRoot, name: path.basename(selectedRoot) };
+});
+
+ipcMain.handle('agent:search-code', async (event, { dirPath, pattern }) => {
+  requireSender(event);
+  const results = [];
+  if (!dirPath || !pattern) return results;
+  try {
+    const safeDir = requireWorkspacePath(dirPath);
+    const walk = (dir) => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const e of entries) {
+        if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) { walk(full); continue; }
+        try {
+          const text = fs.readFileSync(full, 'utf-8');
+          const lines = text.split('\n');
+          const re = new RegExp(pattern, 'gi');
+          for (let i = 0; i < lines.length; i++) {
+            if (re.test(lines[i])) {
+              results.push({
+                file: path.relative(safeDir, full),
+                line: i + 1,
+                content: lines[i].trim().slice(0, 200),
+              });
+              if (results.length >= 50) return;
+            }
+          }
+        } catch {}
+      }
+    };
+    walk(safeDir);
+  } catch {}
+  return results;
+});
+
+ipcMain.handle('agent:read-file', async (event, { filePath, startLine, endLine }) => {
+  requireSender(event);
+  try {
+    const safePath = requireWorkspacePath(filePath);
+    const text = await fs.promises.readFile(safePath, 'utf-8');
+    if (startLine && endLine) {
+      const lines = text.split('\n');
+      return lines.slice(startLine - 1, endLine).join('\n');
+    }
+    return text;
+  } catch {
+    return null;
+  }
+});
+
+ipcMain.handle('agent:write-file', async (event, { filePath, content }) => {
+  requireSender(event);
+  try {
+    const safePath = requireWorkspacePath(filePath);
+    const dir = path.dirname(safePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    await fs.promises.writeFile(safePath, content, 'utf-8');
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+});
+
+ipcMain.handle('agent:delete-file', async (event, filePath) => {
+  requireSender(event);
+  try {
+    await fs.promises.unlink(requireWorkspacePath(filePath));
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+});
+
+ipcMain.handle('agent:list-directory', async (event, { dirPath }) => {
+  requireSender(event);
+  try {
+    const safeDir = requireWorkspacePath(dirPath);
+    const result = [];
+    const entries = fs.readdirSync(safeDir, { withFileTypes: true });
+    for (const e of entries) {
+      if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+      result.push({
+        name: e.name,
+        isDirectory: e.isDirectory(),
+      });
+    }
+    result.sort((a, b) => {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return a.name.localeCompare(b.name);
+    });
+    return result;
+  } catch {
+    return [];
+  }
 });
 
 // 集成终端与一键运行
