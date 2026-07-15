@@ -12,7 +12,7 @@ interface EditorState {
   setContent: (path: string, content: string) => void
   saveActive: () => Promise<void>
   setActive: (path: string) => void
-  reloadFromDisk: (path: string) => Promise<void>
+  reloadFromDisk: (path: string) => Promise<'reloaded' | 'conflict' | 'skipped'>
   isDirty: () => boolean
 }
 export const useEditor = create<EditorState>((set, get) => ({
@@ -55,10 +55,12 @@ export const useEditor = create<EditorState>((set, get) => ({
   setActive: (path) => set({ activePath: path }),
 
   reloadFromDisk: async (path) => {
-    const t = get().tabs.find(x => x.path === path); if (!t || t.binary) return
-    if (t.dirty) return
+    const t = get().tabs.find(x => x.path === path)
+    if (!t || t.binary) return 'skipped'
+    if (t.dirty) return 'conflict'
     const { content } = await api.fs.readFile(path)
     set(s => ({ tabs: s.tabs.map(x => x.path === path ? { ...x, content, savedContent: content, dirty: false } : x) }))
+    return 'reloaded'
   },
 
   isDirty: () => get().tabs.some(t => t.dirty)
