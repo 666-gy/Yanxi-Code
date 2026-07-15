@@ -1,0 +1,10 @@
+:root{
+  --bg-0:#1e1e2e; --bg-1:#181825; --bg-2:#11111b;
+  --surface:#1e1e2e; --surface-2:#313244; --surface-3:#45475a;
+  --text:#cdd6f4; --text-dim:#a6adc8; --text-mute:#6c7086;
+  --accent:#cba6f7; --accent-2:#89b4fa; --danger:#f38ba8;
+  --border:#313244; --radius:8px; --radius-sm:6px;
+  --font-code:'Consolas','Cascadia Code',ui-monospace,monospace;
+  --font-ui:'Inter','Segoe UI',system-ui,sans-serif;
+  --titlebar-h:36px; --sidebar-w:260px;
+}

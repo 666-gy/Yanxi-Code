@@ -1,0 +1,8 @@
+.titlebar{height:var(--titlebar-h);display:flex;align-items:center;background:var(--bg-1);-webkit-app-region:drag;user-select:none;border-bottom:1px solid var(--border)}
+.titlebar__brand{padding:0 14px;font-size:12px;letter-spacing:.3px;color:var(--text-dim);display:flex;align-items:center;gap:8px}
+.titlebar__logo{color:var(--accent)}
+.titlebar__drag{flex:1;height:100%}
+.titlebar__controls{display:flex;-webkit-app-region:no-drag}
+.tb-btn{width:46px;height:var(--titlebar-h);display:flex;align-items:center;justify-content:center;color:var(--text-dim);transition:background .15s,color .15s}
+.tb-btn:hover{background:var(--surface-2);color:var(--text)}
+.tb-btn--close:hover{background:var(--danger);color:#fff}
