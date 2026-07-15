@@ -24,4 +24,6 @@
 .welcome__btn{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:var(--radius);background:var(--accent);color:#1e1e2e;font-weight:600;font-size:13px;transition:filter .15s,transform .12s,box-shadow .15s;box-shadow:0 4px 16px rgba(203,166,247,.25)}
 .welcome__btn:hover{filter:brightness(1.08);box-shadow:0 6px 20px rgba(203,166,247,.4)}
 .welcome__btn:active{transform:scale(.97)}
+/* 药丸形状变体 */
+.welcome__btn--pill{border-radius:999px;padding:10px 26px}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}

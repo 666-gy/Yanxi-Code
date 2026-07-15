@@ -1,4 +1,5 @@
 .activity-bar{width:48px;background:var(--bg-1);border-left:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;align-items:center;flex-shrink:0;position:relative;z-index:20}
+.activity-bar__top{display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:2px;width:100%}
 .activity-bar__bottom{display:flex;flex-direction:column;align-items:center;padding-bottom:8px;gap:2px;width:100%}
 .activity-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--text-mute);position:relative;transition:color .15s}
 .activity-icon:hover{color:var(--text)}

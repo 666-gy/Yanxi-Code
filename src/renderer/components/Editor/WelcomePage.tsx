@@ -9,9 +9,9 @@ export function WelcomePage() {
       <img src={logo} alt="Yanxi Code" className="welcome__logo" draggable={false} />
       <h1 className="welcome__title">Yanxi Code</h1>
       <p className="welcome__sub">As coding as developing</p>
-      <button className="welcome__btn" onClick={open}>
+      <button className="welcome__btn welcome__btn--pill" onClick={open}>
         <FolderOpen size={15} />
-        <span>打开文件夹</span>
+        <span>打开工作区</span>
       </button>
     </div>
   )

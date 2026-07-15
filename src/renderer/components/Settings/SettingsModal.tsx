@@ -26,11 +26,10 @@ export function SettingsModal() {
 
   const onPickImage = async () => {
     try {
-      const p = await api.fs.pickImage()
-      if (!p) return
-      // 将 Windows 路径转为 file:// URL
-      const fileUrl = 'file:///' + p.replace(/\\/g, '/').replace(/^\//, '')
-      setBackgroundImage(fileUrl)
+      const dataUrl = await api.fs.pickImage()
+      if (!dataUrl) return
+      // pickImage 已返回 data URL（base64），可直接用于 <img> 与 background-image
+      setBackgroundImage(dataUrl)
       push('已设置背景图片', 'info')
     } catch (err: any) {
       push(`选择图片失败: ${err?.message ?? err}`, 'error')

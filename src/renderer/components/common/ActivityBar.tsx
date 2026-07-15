@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings } from 'lucide-react'
+import { Settings, GraduationCap, Bot, RefreshCw } from 'lucide-react'
 import { useUi } from '../../store/uiStore'
 import './ActivityBar.css'
 
@@ -13,10 +13,41 @@ export function ActivityBar() {
     return nav ? el.offsetTop : 0
   }
 
+  // 占位 onClick —— 后续接入逻辑
+  const noop = () => {}
+
   return (
     <nav className="activity-bar" onMouseLeave={() => setTooltip(null)}>
-      {/* 底部图标组 */}
+      {/* 顶部功能按钮组 */}
+      <div className="activity-bar__top">
+        <button
+          className="activity-icon"
+          onClick={noop}
+          onMouseEnter={(e) => setTooltip({ text: '博士帽', y: computeY(e.currentTarget) })}
+          title="博士帽"
+        >
+          <GraduationCap size={20} />
+        </button>
+        <button
+          className="activity-icon"
+          onClick={noop}
+          onMouseEnter={(e) => setTooltip({ text: 'Agent', y: computeY(e.currentTarget) })}
+          title="Agent"
+        >
+          <Bot size={20} />
+        </button>
+      </div>
+
+      {/* 底部按钮组 */}
       <div className="activity-bar__bottom">
+        <button
+          className="activity-icon"
+          onClick={noop}
+          onMouseEnter={(e) => setTooltip({ text: '版本检查', y: computeY(e.currentTarget) })}
+          title="版本检查"
+        >
+          <RefreshCw size={20} />
+        </button>
         <button
           className={`activity-icon ${settingsOpen ? 'is-active' : ''}`}
           onClick={toggleSettings}
