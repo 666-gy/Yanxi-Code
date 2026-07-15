@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron'
 import { join } from 'path'
+import { registerIpc } from './ipc'
 
 let win: BrowserWindow | null = null
 function createWindow() {
@@ -35,5 +36,8 @@ ipcMain.on('window:maximize-state:subscribe', (e) => {
   win?.on('unmaximize', send)
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  registerIpc()
+  createWindow()
+})
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
