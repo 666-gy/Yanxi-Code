@@ -1,0 +1,7 @@
+.activity-bar{width:48px;background:var(--bg-1);border-left:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;align-items:center;flex-shrink:0;position:relative;z-index:20}
+.activity-bar__bottom{display:flex;flex-direction:column;align-items:center;padding-bottom:8px;gap:2px;width:100%}
+.activity-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--text-mute);position:relative;transition:color .15s}
+.activity-icon:hover{color:var(--text)}
+.activity-icon.is-active{color:var(--text)}
+.activity-icon__indicator{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent)}
+.activity-tooltip{position:absolute;left:48px;padding:4px 10px;border-radius:var(--radius-sm);background:var(--surface-2);border:1px solid var(--border);font-size:11px;color:var(--text);white-space:nowrap;pointer-events:none;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.4)}
