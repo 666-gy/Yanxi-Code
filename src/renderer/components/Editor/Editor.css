@@ -1,16 +1,13 @@
-.editor-area{display:flex;flex-direction:column;flex:1;min-width:0;background:var(--panel-bg-0)}
-.editor-area__body{flex:1;min-height:0;position:relative;background:var(--panel-bg-0)}
+.editor-area{display:flex;flex-direction:column;flex:1;min-width:0;background:var(--bg-0)}
+.editor-area__body{flex:1;min-height:0;position:relative}
 .editor-empty,.editor-binary{height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-mute);font-size:13px;letter-spacing:.3px}
 
-/* Monaco DOM 背景覆盖为透明，由 .editor-area__body 的半透明背景控制 */
-.monaco-editor,.monaco-editor .overflow-guard,.monaco-editor .monaco-editor-background,.monaco-editor .margin,.monaco-editor .scroll-decoration{background-color:transparent !important}
-
 /* Tab 栏 */
-.tabbar{display:flex;height:36px;background:var(--panel-bg-1);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:thin}
+.tabbar{display:flex;height:36px;background:var(--bg-1);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:thin}
 .tabbar::-webkit-scrollbar{height:2px}
 .tab{display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;height:100%;cursor:pointer;border-right:1px solid var(--border);color:var(--text-mute);font-size:13px;max-width:200px;position:relative;transition:background .12s,color .12s}
 .tab:hover{background:var(--surface-2)}
-.tab--active{background:var(--panel-bg-0);color:var(--text)}
+.tab--active{background:var(--bg-0);color:var(--text)}
 .tab--active::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent)}
 .tab__dot{width:8px;height:8px;border-radius:50%;background:transparent;border:1px solid var(--text-mute);flex-shrink:0;transition:background .15s,border-color .15s}
 .tab__dot--dirty{background:var(--accent-2);border-color:var(--accent-2)}

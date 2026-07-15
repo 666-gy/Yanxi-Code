@@ -21,7 +21,6 @@ export type WatchEvent =
 
 export interface FsApi {
   pickWorkspace: () => Promise<string | null>
-  pickImage: () => Promise<string | null>
   listDir: (dir: string) => Promise<FileNode[]>
   readFile: (path: string) => Promise<{ content: string; binary: boolean }>
   writeFile: (path: string, content: string) => Promise<void>

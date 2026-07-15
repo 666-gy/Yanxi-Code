@@ -15,7 +15,6 @@ const api: ApiShape = {
   },
   fs: {
     pickWorkspace: () => ipcRenderer.invoke('fs:pickWorkspace'),
-    pickImage: () => ipcRenderer.invoke('fs:pickImage'),
     listDir: (dir) => ipcRenderer.invoke('fs:listDir', dir),
     readFile: (p) => ipcRenderer.invoke('fs:readFile', p),
     writeFile: (p, c) => ipcRenderer.invoke('fs:writeFile', p, c),

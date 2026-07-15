@@ -1,4 +1,4 @@
-.titlebar{height:var(--titlebar-h);display:flex;align-items:center;background:var(--panel-bg-1);-webkit-app-region:drag;user-select:none;border-bottom:1px solid var(--border)}
+.titlebar{height:var(--titlebar-h);display:flex;align-items:center;background:var(--bg-1);-webkit-app-region:drag;user-select:none;border-bottom:1px solid var(--border)}
 .titlebar__side-btn{width:36px;height:var(--titlebar-h);display:flex;align-items:center;justify-content:center;color:var(--text-mute);-webkit-app-region:no-drag;transition:background .15s,color .15s}
 .titlebar__side-btn:hover{background:var(--surface-2);color:var(--text)}
 .titlebar__side-btn.is-active{color:var(--accent)}
