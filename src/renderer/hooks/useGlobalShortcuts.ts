@@ -12,7 +12,18 @@ export function useGlobalShortcuts() {
       if (!ctrl) return
       const key = e.key.toLowerCase()
       if (key === 's') { e.preventDefault(); saveActive(); return }
-      if (key === 'n') { e.preventDefault(); if (!useWorkspace.getState().root) open(); return }
+      if (key === 'n') {
+        e.preventDefault()
+        if (e.shiftKey) {
+          // Ctrl+Shift+N = 新建文件夹
+          if (useWorkspace.getState().root) window.dispatchEvent(new CustomEvent('yanxi:new-folder'))
+        } else {
+          // Ctrl+N = 新建文件（有工作区时）或打开工作区选择器（无工作区时）
+          if (useWorkspace.getState().root) window.dispatchEvent(new CustomEvent('yanxi:new-file'))
+          else open()
+        }
+        return
+      }
       if (key === 'o') { e.preventDefault(); open(); return }
       if (key === 'w') {
         e.preventDefault()

@@ -17,9 +17,15 @@ export class FileService {
   }
 
   async readFile(path: string): Promise<{ content: string; binary: boolean }> {
+    // 第一道防线：按扩展名快速判定
     if (isBinaryPath(path)) return { content: '', binary: true }
-    const content = await fsReadFile(path, 'utf8')
-    return { content, binary: false }
+    // 第二道防线：读取 buffer，检测前 8KB 是否含 null byte（内容级二进制检测）
+    const buf = await fsReadFile(path)
+    const checkLen = Math.min(buf.length, 8192)
+    for (let i = 0; i < checkLen; i++) {
+      if (buf[i] === 0) return { content: '', binary: true }
+    }
+    return { content: buf.toString('utf8'), binary: false }
   }
 
   async writeFile(path: string, content: string): Promise<void> {

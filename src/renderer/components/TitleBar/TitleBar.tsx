@@ -11,6 +11,7 @@ export function TitleBar() {
   useEffect(() => (window as any).api.window.onMaximizeChange(setMax), [])
   const w = (window as any).api.window
   const open = useWorkspace(s => s.open)
+  const wsRoot = useWorkspace(s => s.root)
   const toggleSidebar = useUi(s => s.toggleSidebar)
   const sidebarCollapsed = useUi(s => s.sidebarCollapsed)
   return (
@@ -26,7 +27,9 @@ export function TitleBar() {
         <img src={logo} alt="Yanxi Code" className="titlebar__logo" draggable={false} />
         <span className="titlebar__brand-text">Yanxi Code</span>
       </div>
-      <button className="titlebar__action" onClick={open}>打开文件夹</button>
+      <button className="titlebar__action" onClick={open} title={wsRoot ?? '选择工作区文件夹'}>
+        {wsRoot ?? '打开工作区'}
+      </button>
       <div className="titlebar__drag" />
       <div className="titlebar__controls">
         <button className="tb-btn" onClick={w.minimize} title="最小化"><MinIcon size={15} /></button>

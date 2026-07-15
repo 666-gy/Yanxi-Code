@@ -35,6 +35,21 @@ describe('FileService', () => {
     expect(r.binary).toBe(false)
     expect(r.content).toBe('export const x = 1')
   })
+  it('readFile detects binary by content (null byte) even for unknown ext', async () => {
+    const svc = new FileService()
+    const p = join(root, 'mystery.xyz')
+    await writeFile(p, Buffer.from([0x41, 0x00, 0x42, 0x43])) // contains null byte
+    const r = await svc.readFile(p)
+    expect(r.binary).toBe(true)
+    expect(r.content).toBe('')
+  })
+  it('readFile treats .lnk as binary', async () => {
+    const svc = new FileService()
+    const p = join(root, 'shortcut.lnk')
+    await writeFile(p, Buffer.from([0x4c, 0x00, 0x00, 0x00]))
+    const r = await svc.readFile(p)
+    expect(r.binary).toBe(true)
+  })
   it('createEntry + deleteEntry round-trip', async () => {
     const svc = new FileService()
     const p = join(root, 'new.ts')

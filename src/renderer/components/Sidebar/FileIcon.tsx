@@ -3,7 +3,7 @@ import {
   FileCode, FileText, FileJson, FileTerminal, FileCog,
   FileArchive, FileImage, FileMusic, FileVideoCamera,
   FileSpreadsheet, FileLock, FileType, Database, Package,
-  File as FileGeneric
+  File as FileGeneric, Folder, FolderOpen
 } from 'lucide-react'
 import { isBinaryPath } from '../../../shared/constants'
 
@@ -93,9 +93,14 @@ function binaryGlyph(ext: string): { color: string; glyph: Glyph } {
   return { color: '#7c8095', glyph: <FileArchive size={15} /> }
 }
 
-export function FileIcon({ name, isDir }: { name: string; isDir: boolean; expanded?: boolean }) {
-  // 目录的展开/折叠箭头由 FileTreeNode 的 tn__chev 负责，这里不重复渲染
-  if (isDir) return null
+export function FileIcon({ name, isDir, expanded }: { name: string; isDir: boolean; expanded?: boolean }) {
+  if (isDir) {
+    return (
+      <span style={{ color: expanded ? 'var(--accent)' : 'var(--accent-2)', display: 'inline-flex' }}>
+        {expanded ? <FolderOpen size={15} /> : <Folder size={15} />}
+      </span>
+    )
+  }
   const dot = name.lastIndexOf('.')
   const ext = dot >= 0 ? name.slice(dot + 1).toLowerCase() : ''
   // 特殊文件名匹配（无扩展名）
