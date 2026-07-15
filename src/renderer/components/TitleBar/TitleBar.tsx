@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { PanelLeft } from 'lucide-react'
+import { PanelLeft, Settings } from 'lucide-react'
 import { MinIcon, MaxIcon, RestoreIcon, CloseIcon } from '../common/Icons'
 import { useWorkspace } from '../../store/workspaceStore'
 import { useUi } from '../../store/uiStore'
@@ -13,7 +13,9 @@ export function TitleBar() {
   const open = useWorkspace(s => s.open)
   const wsRoot = useWorkspace(s => s.root)
   const toggleSidebar = useUi(s => s.toggleSidebar)
+  const toggleRightSidebar = useUi(s => s.toggleRightSidebar)
   const sidebarCollapsed = useUi(s => s.sidebarCollapsed)
+  const rightSidebarCollapsed = useUi(s => s.rightSidebarCollapsed)
   return (
     <div className="titlebar">
       <button
@@ -31,6 +33,14 @@ export function TitleBar() {
         {wsRoot ?? '打开工作区'}
       </button>
       <div className="titlebar__drag" />
+      <button
+        className={`titlebar__side-btn ${!rightSidebarCollapsed ? 'is-active' : ''}`}
+        onClick={toggleRightSidebar}
+        title={rightSidebarCollapsed ? '打开设置' : '关闭设置面板'}
+        style={{ marginRight: 4 }}
+      >
+        <Settings size={15} />
+      </button>
       <div className="titlebar__controls">
         <button className="tb-btn" onClick={w.minimize} title="最小化"><MinIcon size={15} /></button>
         <button className="tb-btn" onClick={w.maximizeToggle} title="最大化/还原">{max ? <RestoreIcon size={13} /> : <MaxIcon size={13} />}</button>

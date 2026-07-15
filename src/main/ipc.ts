@@ -13,6 +13,14 @@ export function registerIpc() {
     const r = await dialog.showOpenDialog({ properties: ['openDirectory'] })
     return r.canceled ? null : r.filePaths[0]
   })
+  ipcMain.handle('fs:pickImage', async () => {
+    const r = await dialog.showOpenDialog({
+      title: '选择背景图片',
+      properties: ['openFile'],
+      filters: [{ name: '图片', extensions: ['png','jpg','jpeg','gif','bmp','webp','svg','avif'] }]
+    })
+    return r.canceled ? null : r.filePaths[0]
+  })
   ipcMain.handle('fs:listDir',   (_e, dir: string) => fs.listDir(dir))
   ipcMain.handle('fs:readFile',  (_e, p: string) => fs.readFile(p))
   ipcMain.handle('fs:writeFile', (_e, p: string, c: string) => fs.writeFile(p, c))

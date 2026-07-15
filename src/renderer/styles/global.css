@@ -2,6 +2,7 @@
 html,body,#root{height:100%;margin:0}
 body{background:var(--bg-0);color:var(--text);font-family:var(--font-ui);overflow:hidden}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input{font-family:inherit}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:6px;border:2px solid var(--bg-0)}
 ::-webkit-scrollbar-thumb:hover{background:var(--text-mute)}
@@ -9,3 +10,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
 .tab,.tn{transition:background .12s ease}
 .editor-area__body{transition:opacity .2s ease}
+.app__body{flex:1;display:flex;min-height:0}
+.app__main{flex:1;display:flex;min-width:0;position:relative;overflow:hidden}
+.app__bg{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;pointer-events:none;z-index:0;transition:opacity .2s ease}
+.app__main > .editor-area{position:relative;z-index:1;flex:1}
