@@ -1,6 +1,9 @@
 .editor-area{display:flex;flex-direction:column;flex:1;min-width:0;background:var(--panel-bg-0)}
-.editor-area__body{flex:1;min-height:0;position:relative}
+.editor-area__body{flex:1;min-height:0;position:relative;background:var(--panel-bg-0)}
 .editor-empty,.editor-binary{height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-mute);font-size:13px;letter-spacing:.3px}
+
+/* Monaco DOM 背景覆盖为透明，由 .editor-area__body 的半透明背景控制 */
+.monaco-editor,.monaco-editor .overflow-guard,.monaco-editor .monaco-editor-background,.monaco-editor .margin,.monaco-editor .scroll-decoration{background-color:transparent !important}
 
 /* Tab 栏 */
 .tabbar{display:flex;height:36px;background:var(--panel-bg-1);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:thin}

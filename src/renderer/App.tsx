@@ -20,7 +20,7 @@ export function App() {
   const panelAlpha = 1 - backgroundOpacity
 
   return (
-    <div className="app" style={{ '--panel-alpha': panelAlpha } as React.CSSProperties}>
+    <div className="app" style={{ '--panel-alpha': String(panelAlpha) } as React.CSSProperties}>
       <TitleBar />
       <div className="app__body">
         {!sidebarCollapsed && <Sidebar />}
