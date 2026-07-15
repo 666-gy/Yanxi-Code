@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { api } from '../services/ipc'
 import { isBinaryPath } from '../../shared/constants'
 
-export interface Tab { path: string; name: string; content: string; savedContent: string; binary: boolean; dirty: boolean }
+export interface Tab { path: string; name: string; content: string; savedContent: string; binary: boolean; dirty: boolean; mdView?: 'preview' | 'edit' }
 
 interface EditorState {
   tabs: Tab[]
@@ -15,6 +15,7 @@ interface EditorState {
   reloadFromDisk: (path: string) => Promise<'reloaded' | 'conflict' | 'skipped'>
   isDirty: () => boolean
   closeAll: () => void
+  toggleMdView: (path: string) => void
 }
 export const useEditor = create<EditorState>((set, get) => ({
   tabs: [], activePath: null,
@@ -30,7 +31,8 @@ export const useEditor = create<EditorState>((set, get) => ({
     }
     const { content } = await api.fs.readFile(path)
     const name = path.replace(/[/\\]+$/, '').split(/[/\\]/).pop()!
-    set(s => ({ tabs: [...s.tabs, { path, name, content, savedContent: content, binary: false, dirty: false }], activePath: path }))
+    const isMd = name.toLowerCase().endsWith('.md')
+    set(s => ({ tabs: [...s.tabs, { path, name, content, savedContent: content, binary: false, dirty: false, mdView: isMd ? 'preview' : undefined }], activePath: path }))
     return { blocked: false }
   },
 
@@ -66,5 +68,9 @@ export const useEditor = create<EditorState>((set, get) => ({
 
   isDirty: () => get().tabs.some(t => t.dirty),
 
-  closeAll: () => set({ tabs: [], activePath: null })
+  closeAll: () => set({ tabs: [], activePath: null }),
+
+  toggleMdView: (path) => set(s => ({
+    tabs: s.tabs.map(t => t.path === path && t.mdView ? { ...t, mdView: t.mdView === 'preview' ? 'edit' : 'preview' } : t)
+  }))
 }))

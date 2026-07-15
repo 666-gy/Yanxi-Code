@@ -162,7 +162,7 @@ export function SettingsModal() {
                       />
                       <span>{Math.round(backgroundOpacity * 100)}%</span>
                     </div>
-                    <p className="settings-hint">控制背景图层在编辑器区域的可见度。0% 完全隐藏，100% 完全显示。</p>
+                    <p className="settings-hint">控制背景图片在编辑器区域的可见度。0% 完全隐藏，100% 完全显示（面板将变为半透明）。</p>
                   </div>
                 </section>
               </>

@@ -7,4 +7,8 @@
   --font-code:'Consolas','Cascadia Code',ui-monospace,monospace;
   --font-ui:'Inter','Segoe UI',system-ui,sans-serif;
   --titlebar-h:36px; --sidebar-w:260px;
+  /* 面板半透明背景：由 App.tsx 设置 --panel-alpha (0~1)，让自定义背景图透出 */
+  --panel-alpha:1;
+  --panel-bg-0:rgba(30,30,46,var(--panel-alpha));
+  --panel-bg-1:rgba(24,24,37,var(--panel-alpha));
 }
