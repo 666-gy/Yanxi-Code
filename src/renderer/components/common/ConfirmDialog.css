@@ -1,0 +1,9 @@
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:2000;animation:fade .15s ease}
+.modal{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;min-width:340px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.modal__title{font-size:14px;font-weight:600;margin-bottom:10px}
+.modal__msg{font-size:13px;color:var(--text-dim);margin-bottom:18px;line-height:1.5}
+.modal__actions{display:flex;justify-content:flex-end;gap:10px}
+.modal__btn{padding:7px 16px;border-radius:var(--radius-sm);font-size:13px;background:var(--surface-3);color:var(--text)}
+.modal__btn--primary{background:var(--accent);color:#1e1e2e;font-weight:600}
+.modal__btn:hover{filter:brightness(1.1)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
