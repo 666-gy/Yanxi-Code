@@ -1,10 +1,15 @@
 .titlebar{height:var(--titlebar-h);display:flex;align-items:center;background:var(--bg-1);-webkit-app-region:drag;user-select:none;border-bottom:1px solid var(--border)}
-.titlebar__brand{padding:0 14px;font-size:12px;letter-spacing:.3px;color:var(--text-dim);display:flex;align-items:center;gap:8px}
-.titlebar__logo{color:var(--accent)}
+.titlebar__side-btn{width:36px;height:var(--titlebar-h);display:flex;align-items:center;justify-content:center;color:var(--text-mute);-webkit-app-region:no-drag;transition:background .15s,color .15s}
+.titlebar__side-btn:hover{background:var(--surface-2);color:var(--text)}
+.titlebar__side-btn.is-active{color:var(--accent)}
+.titlebar__brand{padding:0 12px 0 8px;font-size:12px;letter-spacing:.3px;color:var(--text-dim);display:flex;align-items:center;gap:8px}
+.titlebar__logo{width:20px;height:20px;display:block}
+.titlebar__brand-text{font-weight:600;color:var(--text)}
 .titlebar__drag{flex:1;height:100%}
 .titlebar__controls{display:flex;-webkit-app-region:no-drag}
 .tb-btn{width:46px;height:var(--titlebar-h);display:flex;align-items:center;justify-content:center;color:var(--text-dim);transition:background .15s,color .15s}
 .tb-btn:hover{background:var(--surface-2);color:var(--text)}
 .tb-btn--close:hover{background:var(--danger);color:#fff}
-.titlebar__action{font-size:12px;color:var(--text-dim);padding:4px 10px;border-radius:var(--radius-sm);margin-left:8px;-webkit-app-region:no-drag;transition:background .15s,color .15s}
+.titlebar__action{font-size:12px;color:var(--text-dim);padding:5px 12px;border-radius:var(--radius-sm);margin-left:8px;-webkit-app-region:no-drag;transition:background .15s,color .15s,transform .12s}
 .titlebar__action:hover{background:var(--surface-2);color:var(--text)}
+.titlebar__action:active{transform:scale(.96)}

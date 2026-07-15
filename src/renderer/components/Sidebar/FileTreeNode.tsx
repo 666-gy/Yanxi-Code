@@ -1,5 +1,6 @@
 import type React from 'react'
 import { useState } from 'react'
+import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import type { FileNode } from '../../../shared/types'
 import { useFileTree } from '../../store/fileTreeStore'
 import { useEditor } from '../../store/editorStore'
@@ -25,8 +26,14 @@ export function FileTreeNode({ node, depth, onContext }: Props) {
       onClick={onClick}
       onContextMenu={(e) => { e.preventDefault(); onContext(e, node) }}
     >
-      <span className={`tn__chev ${spin ? 'spin' : ''}`}>{node.isDir ? (node.expanded ? '▾' : '▸') : ''}</span>
-      <FileIcon name={node.name} isDir={node.isDir} expanded={node.expanded} />
+      <span className="tn__chev">
+        {node.isDir && (
+          spin
+            ? <Loader2 size={12} className="spin" />
+            : node.expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />
+        )}
+      </span>
+      <span className="tn__icon"><FileIcon name={node.name} isDir={node.isDir} expanded={node.expanded} /></span>
       <span className="tn__name">{node.name}</span>
     </div>
   )

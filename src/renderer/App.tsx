@@ -4,14 +4,16 @@ import { EditorArea } from './components/Editor/EditorArea'
 import { ToastStack } from './components/common/Toast'
 import { useWorkspaceWatcher } from './hooks/useWorkspaceWatcher'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import { useUi } from './store/uiStore'
 export function App() {
   useWorkspaceWatcher()
   useGlobalShortcuts()
+  const sidebarCollapsed = useUi(s => s.sidebarCollapsed)
   return (
     <div className="app">
       <TitleBar />
       <div className="app__body">
-        <Sidebar />
+        {!sidebarCollapsed && <Sidebar />}
         <EditorArea />
       </div>
       <ToastStack />

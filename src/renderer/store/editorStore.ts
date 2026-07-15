@@ -14,6 +14,7 @@ interface EditorState {
   setActive: (path: string) => void
   reloadFromDisk: (path: string) => Promise<'reloaded' | 'conflict' | 'skipped'>
   isDirty: () => boolean
+  closeAll: () => void
 }
 export const useEditor = create<EditorState>((set, get) => ({
   tabs: [], activePath: null,
@@ -63,5 +64,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     return 'reloaded'
   },
 
-  isDirty: () => get().tabs.some(t => t.dirty)
+  isDirty: () => get().tabs.some(t => t.dirty),
+
+  closeAll: () => set({ tabs: [], activePath: null })
 }))

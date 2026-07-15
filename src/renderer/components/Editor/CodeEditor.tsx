@@ -43,7 +43,7 @@ export function CodeEditor() {
         quickSuggestions: { other: true, comments: false, strings: true },
         suggestOnTriggerCharacters: true,
         tabCompletion: 'on',
-        wordBasedSuggestions: 'currentDocuments',
+        wordBasedSuggestions: 'matchingDocuments',
         padding: { top: 14, bottom: 14 },
         scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 }
       }}
