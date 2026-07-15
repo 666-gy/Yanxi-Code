@@ -6,3 +6,5 @@
 .tb-btn{width:46px;height:var(--titlebar-h);display:flex;align-items:center;justify-content:center;color:var(--text-dim);transition:background .15s,color .15s}
 .tb-btn:hover{background:var(--surface-2);color:var(--text)}
 .tb-btn--close:hover{background:var(--danger);color:#fff}
+.titlebar__action{font-size:12px;color:var(--text-dim);padding:4px 10px;border-radius:var(--radius-sm);margin-left:8px;-webkit-app-region:no-drag;transition:background .15s,color .15s}
+.titlebar__action:hover{background:var(--surface-2);color:var(--text)}
