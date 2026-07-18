@@ -3,14 +3,14 @@
   <h1>Yanxi Code</h1>
   <p>A lightweight desktop editor connecting code and intelligent agents</p>
   <p><strong>v1.3.0</strong></p>
-  <p><a href="README.md">简体中文</a> · <a href="docs/index.html">Website</a></p>
+  <p><a href="README.md">简体中文</a> · <a href="https://666-gy.github.io/Yanxi-Code/docs/index.html">Website</a></p>
 </div>
 
 Yanxi Code is a desktop code editor built for the two-way Yanxi workflow. It combines a full Monaco Editor workspace with bidirectional workspace handoff to Yan Agent. Its built-in Yan Teach feature can also use DeepSeek to turn selected code or an entire file into a Chinese Markdown explanation.
 
 ## Download
 
-The installer and portable builds will be published through GitHub Releases after the repository is created. Both entries are prepared in the [website download section](docs/index.html#download) and will link directly to their corresponding Release assets.
+Yanxi Code v1.3.0 is available as a Windows installer and a portable build. Visit the [official website](https://666-gy.github.io/Yanxi-Code/docs/index.html) to choose a build and download it from GitHub Releases.
 
 > [!IMPORTANT]
 > Install Yanxi Code from an **administrator account**. Otherwise, workspace synchronization from Yan Agent to Yanxi Code may fail.
@@ -111,4 +111,4 @@ The API key stays in local application storage. Code or file content is sent dir
 
 Electron, React, TypeScript, Vite, Monaco Editor, Zustand, and Vitest.
 
-Visit the [Yanxi Code website](docs/index.html) for the product overview and usage guide.
+Visit the [Yanxi Code website](https://666-gy.github.io/Yanxi-Code/docs/index.html) for the product overview and usage guide.

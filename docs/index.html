@@ -853,17 +853,6 @@
         color: #fff;
       }
 
-      .download-option .button.is-pending {
-        border-color: #aeb4bc;
-        background: #e2e5e9;
-        color: #777f89;
-        cursor: not-allowed;
-      }
-
-      .download-option .button.is-pending:hover {
-        transform: none;
-      }
-
       .site-footer {
         padding: 32px 0;
         border-top: 1px solid var(--line);
@@ -1343,8 +1332,8 @@
             <div class="section-label">05 / DOWNLOAD</div>
             <h2 class="section-heading" data-lang="zh">选择适合你的 Windows 版本。</h2>
             <h2 class="section-heading" data-lang="en">Choose the right Windows build.</h2>
-            <p class="section-copy" data-lang="zh">安装版适合长期使用，便携版无需安装即可运行。两个版本都将通过 GitHub Releases 提供。</p>
-            <p class="section-copy" data-lang="en">Use the installer for a permanent setup, or run the portable build without installation. Both will be published through GitHub Releases.</p>
+            <p class="section-copy" data-lang="zh">安装版适合长期使用，便携版无需安装即可运行。v1.3.0 现已通过 GitHub Releases 提供。</p>
+            <p class="section-copy" data-lang="en">Use the installer for a permanent setup, or run the portable build without installation. Version 1.3.0 is now available through GitHub Releases.</p>
           </div>
 
           <div class="download-notice reveal">
@@ -1363,7 +1352,7 @@
               <p data-lang="zh">写入系统安装目录并创建快捷方式，适合日常稳定使用。</p>
               <p data-lang="en">Installs to the system, creates shortcuts, and is recommended for everyday use.</p>
               <div class="download-option-meta"><span>Windows x64</span><span>.exe</span><span>v1.3.0</span></div>
-              <a class="button is-pending" data-release-link="setup" aria-disabled="true"><span data-lang="zh">等待 Release 链接</span><span data-lang="en">Release link pending</span></a>
+              <a class="button" href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.3.0/Yanxi.Code.Setup.1.3.0.exe"><span data-lang="zh">下载安装版</span><span data-lang="en">Download installer</span></a>
             </article>
 
             <article class="download-option">
@@ -1373,7 +1362,7 @@
               <p data-lang="zh">无需安装，下载后直接运行，适合临时使用或放入移动存储。</p>
               <p data-lang="en">Runs without installation and is suitable for temporary or removable storage use.</p>
               <div class="download-option-meta"><span>Windows x64</span><span>.exe</span><span>v1.3.0</span></div>
-              <a class="button is-pending" data-release-link="portable" aria-disabled="true"><span data-lang="zh">等待 Release 链接</span><span data-lang="en">Release link pending</span></a>
+              <a class="button" href="https://github.com/666-gy/Yanxi-Code/releases/download/v1.3.0/Yanxi.Code.Portable.1.3.0.exe"><span data-lang="zh">下载便携版</span><span data-lang="en">Download portable</span></a>
             </article>
           </div>
         </div>
@@ -1442,12 +1431,6 @@
       const menuButton = document.getElementById("menuButton");
       const navLinks = document.getElementById("navLinks");
 
-      // Fill these two URLs after the Yanxi Code GitHub Release is created.
-      const releaseLinks = {
-        setup: "",
-        portable: ""
-      };
-
       function setLanguage(language) {
         const next = language === "en" ? "en" : "zh";
         root.dataset.language = next;
@@ -1472,19 +1455,6 @@
         if (event.target.closest("a")) {
           navLinks.classList.remove("is-open");
           menuButton.setAttribute("aria-expanded", "false");
-        }
-      });
-
-      document.querySelectorAll("[data-release-link]").forEach((link) => {
-        const url = releaseLinks[link.dataset.releaseLink];
-        if (url) {
-          link.href = url;
-          link.target = "_blank";
-          link.rel = "noreferrer";
-          link.classList.remove("is-pending");
-          link.removeAttribute("aria-disabled");
-        } else {
-          link.addEventListener("click", (event) => event.preventDefault());
         }
       });
 
