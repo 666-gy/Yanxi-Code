@@ -40,3 +40,18 @@
 .settings-status{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 6px;border-radius:4px}
 .settings-status--ok{color:#a6e3a1;background:rgba(166,227,161,.1)}
 .settings-status--warn{color:#f9e2af;background:rgba(249,226,175,.1)}
+
+/* 关于 */
+.settings-about{max-width:410px;margin:0 auto;padding:10px 4px}
+.settings-about__brand{display:flex;align-items:center;gap:16px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.settings-about__logo{width:64px;height:64px;object-fit:contain;flex-shrink:0}
+.settings-about__name{margin:0;color:var(--text);font-size:20px;font-weight:650;letter-spacing:0}
+.settings-about__version{margin:5px 0 0;color:var(--text-mute);font-size:12px;font-family:var(--font-code)}
+.settings-about__intro{margin:18px 0;color:var(--text-dim);font-size:12px;line-height:1.75}
+.settings-about__features{display:flex;flex-direction:column;gap:16px}
+.settings-about__feature{display:flex;align-items:flex-start;gap:11px;color:var(--text-mute)}
+.settings-about__feature>svg{margin-top:2px;flex-shrink:0;color:var(--text)}
+.settings-about__feature div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.settings-about__feature strong{color:var(--text);font-size:12px;font-weight:600}
+.settings-about__feature span{color:var(--text-mute);font-size:11px;line-height:1.55}
+.settings-about__tagline{margin:22px 0 0;padding-top:14px;border-top:1px solid var(--border);color:var(--text-mute);font-size:11px;text-align:center}

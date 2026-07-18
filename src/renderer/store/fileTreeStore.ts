@@ -3,6 +3,7 @@ import { api } from '../services/ipc'
 import type { FileNode, WatchEvent } from '../../shared/types'
 import { basename } from './pathShim'
 import { applyWatchEvent as applyShared, findNode as findShared } from '../../shared/treeOps'
+import { useWorkspace } from './workspaceStore'
 
 interface TreeState {
   root: FileNode | null
@@ -19,9 +20,14 @@ export const useFileTree = create<TreeState>((set, get) => ({
 
   loadRoot: async (dir) => {
     set({ loading: true })
-    const children = await api.fs.listDir(dir)
-    set({ root: { name: basename(dir), path: dir, isDir: true, expanded: true, children }, loading: false })
-    await api.fs.watch(dir)
+    try {
+      const children = await api.fs.listDir(dir)
+      set({ root: { name: basename(dir), path: dir, isDir: true, expanded: true, children }, loading: false })
+      await api.fs.watch(dir)
+    } catch {
+      set({ root: null, loading: false })
+      if (useWorkspace.getState().root) useWorkspace.getState().close()
+    }
   },
 
   toggle: async (path) => {

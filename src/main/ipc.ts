@@ -1,14 +1,17 @@
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { FileService } from './services/FileService'
 import { WatcherService } from './services/WatcherService'
+import { YanAgentService } from './services/YanAgentService'
+import type { YanAgentWorkspaceBridge } from './services/YanAgentWorkspaceBridge'
 import type { WatchEvent } from '../shared/types'
 
 const fs = new FileService()
+const yanAgent = new YanAgentService()
 const watcher = new WatcherService((e: WatchEvent) => {
   for (const w of BrowserWindow.getAllWindows()) w.webContents.send('watch:event', e)
 })
 
-export function registerIpc() {
+export function registerIpc(workspaceBridge: YanAgentWorkspaceBridge) {
   ipcMain.handle('fs:pickWorkspace', async () => {
     const r = await dialog.showOpenDialog({ properties: ['openDirectory'] })
     return r.canceled ? null : r.filePaths[0]
@@ -21,4 +24,9 @@ export function registerIpc() {
   ipcMain.handle('fs:rename',    (_e, from: string, to: string) => fs.renameEntry(from, to))
   ipcMain.handle('fs:watch',     (_e, dir: string) => watcher.watch(dir))
   ipcMain.handle('fs:unwatch',   () => watcher.unwatch())
+  ipcMain.handle('workspace:consume-agent-open', () => workspaceBridge.consumePending())
+  ipcMain.on('workspace:ack-agent-open', (_event, workspace: string) => workspaceBridge.acknowledge(workspace))
+
+  ipcMain.handle('agent:isInstalled', () => yanAgent.isInstalled())
+  ipcMain.handle('agent:openAndSync', (_e, workspace: string | null) => yanAgent.openAndSync(workspace))
 }

@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useEditor } from '../../store/editorStore'
 import { useWorkspace } from '../../store/workspaceStore'
 import { useToast } from '../../store/toastStore'
+import { useYanTeachTranslate } from '../../hooks/useYanTeachTranslate'
+import { getMonacoSelection } from '../../utils/monacoBridge'
+import { guessLang } from '../../utils/languageUtils'
 import { CodeEditor } from './CodeEditor'
 import { TabBar } from './TabBar'
 import { WelcomePage } from './WelcomePage'
@@ -13,6 +16,7 @@ export function EditorArea() {
   const activePath = useEditor(s => s.activePath)
   const toggleMdView = useEditor(s => s.toggleMdView)
   const push = useToast(s => s.push)
+  const { translate } = useYanTeachTranslate()
   const [ctx, setCtx] = useState<EditorCtxState | null>(null)
 
   if (!hasWs && tabs.length === 0) return <WelcomePage />
@@ -44,6 +48,26 @@ export function EditorArea() {
     }
   }
 
+  const doTranslate = async () => {
+    if (!activeTab || activeTab.binary) {
+      push('请先打开可编辑的代码文件', 'info')
+      return
+    }
+    const sel = getMonacoSelection()
+    if (!sel?.text.trim()) {
+      push('请先选中要讲解的代码', 'info')
+      return
+    }
+    const result = await translate(sel.text, guessLang(activeTab.name), {
+      filePath: activeTab.path,
+      fileName: activeTab.name,
+      startLine: sel.startLine,
+      endLine: sel.endLine,
+      scope: 'selection'
+    })
+    if (!result.ok && result.error !== '已取消') push(result.error, 'error')
+  }
+
   return (
     <div className="editor-area">
       <TabBar />
@@ -58,7 +82,7 @@ export function EditorArea() {
         actions={{
           copy: doCopy,
           paste: doPaste,
-          translate: () => push('翻译功能开发中', 'info'),
+          translate: () => { void doTranslate() },
           toggleMd: () => { if (activePath) toggleMdView(activePath) }
         }}
       />

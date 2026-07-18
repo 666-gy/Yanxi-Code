@@ -6,6 +6,7 @@ import { useWorkspace } from '../../store/workspaceStore'
 import { useUi } from '../../store/uiStore'
 import { api } from '../../services/ipc'
 import { useToast } from '../../store/toastStore'
+import { samePath } from '../../store/pathShim'
 import { FileTree } from './FileTree'
 import { ContextMenu, type CtxState } from './ContextMenu'
 import { PromptDialog } from '../common/PromptDialog'
@@ -64,11 +65,17 @@ export function Sidebar() {
 
   const doDelete = async () => {
     if (!confirmState || !wsRoot) return
+    const isWorkspaceRoot = samePath(confirmState.path, wsRoot)
     try {
       await api.fs.deleteEntry(confirmState.path)
-      await loadRoot(wsRoot)
-      push('已删除', 'info')
+      if (isWorkspaceRoot) {
+        closeWs()
+      } else {
+        await loadRoot(wsRoot)
+      }
+      push(isWorkspaceRoot ? '工作区已删除' : '已删除', 'info')
     } catch (err: any) {
+      if (isWorkspaceRoot) closeWs()
       push(`删除失败: ${err.message}`, 'error')
     }
     setConfirmState(null)

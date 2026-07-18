@@ -4,3 +4,6 @@ dist/
 *.log
 .DS_Store
 .vite/
+.playwright-cli/
+output/
+docs/downloads/

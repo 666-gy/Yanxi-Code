@@ -27,7 +27,18 @@ const api: ApiShape = {
       const h = (_: unknown, e: WatchEvent) => cb(e)
       ipcRenderer.on('watch:event', h)
       return () => ipcRenderer.off('watch:event', h)
-    }
+    },
+    consumeAgentWorkspace: () => ipcRenderer.invoke('workspace:consume-agent-open'),
+    acknowledgeAgentWorkspace: (workspace) => ipcRenderer.send('workspace:ack-agent-open', workspace),
+    onAgentWorkspace: (cb) => {
+      const h = (_: unknown, workspace: string) => cb(workspace)
+      ipcRenderer.on('workspace:open-from-agent', h)
+      return () => ipcRenderer.off('workspace:open-from-agent', h)
+    },
+  },
+  agent: {
+    isInstalled: () => ipcRenderer.invoke('agent:isInstalled'),
+    openAndSync: (workspace) => ipcRenderer.invoke('agent:openAndSync', workspace),
   }
 }
 contextBridge.exposeInMainWorld('api', api)

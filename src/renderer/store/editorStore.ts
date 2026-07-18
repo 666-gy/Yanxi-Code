@@ -44,9 +44,16 @@ export const useEditor = create<EditorState>((set, get) => ({
     return { tabs, activePath }
   }),
 
-  setContent: (path, content) => set(s => ({
-    tabs: s.tabs.map(t => t.path === path ? { ...t, content, dirty: t.savedContent !== content } : t)
-  })),
+  setContent: (path, content) => set(s => {
+    let changed = false
+    const tabs = s.tabs.map(t => {
+      if (t.path !== path) return t
+      if (t.content === content) return t
+      changed = true
+      return { ...t, content, dirty: t.savedContent !== content }
+    })
+    return changed ? { tabs } : s
+  }),
 
   saveActive: async () => {
     const { activePath, tabs } = get(); if (!activePath) return

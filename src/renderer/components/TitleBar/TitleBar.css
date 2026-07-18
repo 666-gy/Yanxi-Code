@@ -6,6 +6,9 @@
 .titlebar__logo{width:20px;height:20px;display:block}
 .titlebar__brand-text{font-weight:600;color:var(--text)}
 .titlebar__drag{flex:1;height:100%}
+.titlebar__theme-btn{width:36px;height:var(--titlebar-h);display:flex;align-items:center;justify-content:center;color:var(--text-dim);-webkit-app-region:no-drag;transition:background .15s,color .15s,transform .12s}
+.titlebar__theme-btn:hover{background:var(--surface-2);color:var(--text)}
+.titlebar__theme-btn:active{transform:scale(.94)}
 .titlebar__controls{display:flex;-webkit-app-region:no-drag}
 .tb-btn{width:46px;height:var(--titlebar-h);display:flex;align-items:center;justify-content:center;color:var(--text-dim);transition:background .15s,color .15s}
 .tb-btn:hover{background:var(--surface-2);color:var(--text)}

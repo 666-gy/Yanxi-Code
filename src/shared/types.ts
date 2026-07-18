@@ -30,6 +30,14 @@ export interface FsApi {
   unwatch: () => Promise<void>
   onWatchEvent: (cb: (e: WatchEvent) => void) => () => void
   renameEntry: (from: string, to: string) => Promise<void>
+  consumeAgentWorkspace: () => Promise<string>
+  acknowledgeAgentWorkspace: (workspace: string) => void
+  onAgentWorkspace: (cb: (workspace: string) => void) => () => void
 }
 
-export interface ApiShape { window: WindowApi; fs: FsApi }
+export interface AgentApi {
+  isInstalled: () => Promise<boolean>
+  openAndSync: (workspace: string | null) => Promise<{ ok: true; alreadyRunning?: boolean; pid?: number } | { error: string }>
+}
+
+export interface ApiShape { window: WindowApi; fs: FsApi; agent: AgentApi }
